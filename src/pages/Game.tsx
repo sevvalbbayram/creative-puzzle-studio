@@ -37,7 +37,7 @@ const Game = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
   const { userId } = useAnonymousAuth();
-  const { session, players, currentPlayer, updateScore } = useGameSession(sessionId ?? null, userId);
+  const { session, players, currentPlayer, updateScore, endGame } = useGameSession(sessionId ?? null, userId);
   const isGameMaster = currentPlayer?.is_game_master ?? false;
   const [showScoreboard, setShowScoreboard] = useState(false);
 
@@ -173,6 +173,21 @@ const Game = () => {
     setSelectedPiece((prev) => (prev === pieceId ? null : pieceId));
   }, []);
 
+  const handleDragStart = useCallback((pieceId: string) => {
+    setSelectedPiece(pieceId);
+  }, []);
+
+  const handleDragEnd = useCallback(() => {
+    // Don't clear on drag end — the drop handler will clear it
+  }, []);
+
+  const handleDrop = useCallback(
+    (slotId: string, slotStageId: string, slotType: "stage" | "quote") => {
+      handleSlotTap(slotId, slotStageId, slotType);
+    },
+    [handleSlotTap]
+  );
+
   const totalPieces = 10;
   const actualPlaced = phase === 1
     ? pieces.filter((p) => p.placed).length
@@ -272,6 +287,7 @@ const Game = () => {
             currentSlots={currentSlots}
             feedback={feedback}
             onSlotTap={handleSlotTap}
+            onDrop={handleDrop}
             selectedPiece={selectedPiece}
           />
         </div>
@@ -282,6 +298,8 @@ const Game = () => {
           pieces={pieces}
           selectedPiece={selectedPiece}
           onPieceSelect={handlePieceSelect}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
         />
       </main>
 
@@ -342,6 +360,7 @@ const Game = () => {
           players={players}
           open={showScoreboard}
           onClose={() => setShowScoreboard(false)}
+          onEndGame={endGame}
         />
       )}
     </div>
