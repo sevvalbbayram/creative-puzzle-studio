@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, HelpCircle, Users } from "lucide-react";
+import { Clock, Crown, HelpCircle, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useAnonymousAuth } from "@/hooks/useAnonymousAuth";
@@ -288,18 +288,18 @@ const Game = () => {
             <HelpCircle className="h-4 w-4" />
           </Button>
           <ThemeToggle />
+          <span className="flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground sm:px-3 sm:text-xs">
+            <Users className="h-3 w-3" /> {players.length}
+          </span>
           {isGameMaster && (
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 relative"
+              className="h-8 w-8"
               onClick={() => setShowScoreboard((v) => !v)}
               aria-label="Toggle live scoreboard"
             >
-              <Users className="h-4 w-4" />
-              <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
-                {players.length}
-              </span>
+              <Crown className="h-4 w-4" />
             </Button>
           )}
         </div>
