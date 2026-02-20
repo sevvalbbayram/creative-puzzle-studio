@@ -27,19 +27,19 @@ const stageColors: Record<string, { bg: string; border: string }> = {
   verification: { bg: "bg-stage-verification", border: "border-stage-verification" },
 };
 
-// 4 slots — each positioned on a single bird
+// 4 slots — each centered on an individual bird body
 const slotPositions: Record<string, { top: string; left: string; width: string }> = {
-  preparation: { top: "26%", left: "10%", width: "13%" },   // White dove, far left
-  incubation: { top: "30%", left: "30%", width: "13%" },    // Small geese cluster, center-left
-  illumination: { top: "22%", left: "50%", width: "13%" },  // Goose, center-right
-  verification: { top: "14%", left: "70%", width: "13%" },  // Large goose, far right
+  preparation: { top: "28%", left: "8%", width: "14%" },    // Left pair of geese (lower)
+  incubation: { top: "20%", left: "27%", width: "14%" },    // Center-left geese
+  illumination: { top: "16%", left: "44%", width: "14%" },  // Center-right goose
+  verification: { top: "8%", left: "65%", width: "14%" },   // Large goose, far right (highest)
 };
 
 const quotePositions: Record<string, { top: string; left: string; width: string }> = {
-  preparation: { top: "42%", left: "8%", width: "16%" },
-  incubation: { top: "46%", left: "28%", width: "16%" },
-  illumination: { top: "38%", left: "48%", width: "16%" },
-  verification: { top: "30%", left: "68%", width: "16%" },
+  preparation: { top: "42%", left: "6%", width: "17%" },
+  incubation: { top: "35%", left: "25%", width: "17%" },
+  illumination: { top: "31%", left: "42%", width: "17%" },
+  verification: { top: "23%", left: "63%", width: "17%" },
 };
 
 const jigsawClip = "polygon(8% 0%, 36% 0%, 38% 5%, 50% 8%, 62% 5%, 64% 0%, 92% 0%, 100% 8%, 100% 36%, 105% 38%, 108% 50%, 105% 62%, 100% 64%, 100% 92%, 92% 100%, 64% 100%, 62% 95%, 50% 92%, 38% 95%, 36% 100%, 8% 100%, 0% 92%, 0% 64%, -5% 62%, -8% 50%, -5% 38%, 0% 36%, 0% 8%)";
