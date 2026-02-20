@@ -29,17 +29,17 @@ const stageColors: Record<string, { bg: string; border: string }> = {
 
 // 4 slots positioned on each of the 4 birds in the image
 const slotPositions: Record<string, { top: string; left: string; width: string }> = {
-  preparation: { top: "28%", left: "5%", width: "20%" },
-  incubation: { top: "24%", left: "28%", width: "20%" },
-  illumination: { top: "22%", left: "52%", width: "20%" },
-  verification: { top: "26%", left: "75%", width: "20%" },
+  preparation: { top: "22%", left: "16%", width: "17%" },
+  incubation: { top: "18%", left: "33%", width: "17%" },
+  illumination: { top: "15%", left: "50%", width: "17%" },
+  verification: { top: "12%", left: "68%", width: "17%" },
 };
 
 const quotePositions: Record<string, { top: string; left: string; width: string }> = {
-  preparation: { top: "44%", left: "3%", width: "22%" },
-  incubation: { top: "40%", left: "26%", width: "22%" },
-  illumination: { top: "38%", left: "50%", width: "22%" },
-  verification: { top: "42%", left: "73%", width: "22%" },
+  preparation: { top: "36%", left: "11%", width: "19%" },
+  incubation: { top: "34%", left: "31%", width: "19%" },
+  illumination: { top: "31%", left: "48%", width: "19%" },
+  verification: { top: "28%", left: "66%", width: "19%" },
 };
 
 const jigsawClip = "polygon(8% 0%, 36% 0%, 38% 5%, 50% 8%, 62% 5%, 64% 0%, 92% 0%, 100% 8%, 100% 36%, 105% 38%, 108% 50%, 105% 62%, 100% 64%, 100% 92%, 92% 100%, 64% 100%, 62% 95%, 50% 92%, 38% 95%, 36% 100%, 8% 100%, 0% 92%, 0% 64%, -5% 62%, -8% 50%, -5% 38%, 0% 36%, 0% 8%)";
