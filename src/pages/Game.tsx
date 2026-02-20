@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useCallback, useRef } from "react";
-import { Clock, HelpCircle } from "lucide-react";
+import { Clock, HelpCircle, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useAnonymousAuth } from "@/hooks/useAnonymousAuth";
@@ -12,6 +12,7 @@ import { PiecesTray } from "@/components/game/PiecesTray";
 import { CompletionOverlay } from "@/components/game/CompletionOverlay";
 import { InstructionsModal } from "@/components/InstructionsModal";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LiveScoreboard } from "@/components/game/LiveScoreboard";
 import confetti from "canvas-confetti";
 
 interface PieceState {
@@ -35,7 +36,9 @@ const Game = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
   const { userId } = useAnonymousAuth();
-  const { session, currentPlayer, updateScore } = useGameSession(sessionId ?? null, userId);
+  const { session, players, currentPlayer, updateScore } = useGameSession(sessionId ?? null, userId);
+  const isGameMaster = currentPlayer?.is_game_master ?? false;
+  const [showScoreboard, setShowScoreboard] = useState(false);
 
   const [phase, setPhase] = useState<1 | 2>(1);
   const [pieces, setPieces] = useState<PieceState[]>([]);
@@ -225,6 +228,20 @@ const Game = () => {
             <HelpCircle className="h-4 w-4" />
           </Button>
           <ThemeToggle />
+          {isGameMaster && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 relative"
+              onClick={() => setShowScoreboard((v) => !v)}
+              aria-label="Toggle live scoreboard"
+            >
+              <Users className="h-4 w-4" />
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
+                {players.length}
+              </span>
+            </Button>
+          )}
         </div>
       </header>
 
@@ -267,6 +284,15 @@ const Game = () => {
         difficulty={difficulty}
         onViewResults={() => navigate(`/results/${sessionId}`)}
       />
+
+      {/* Game Master Live Scoreboard */}
+      {isGameMaster && (
+        <LiveScoreboard
+          players={players}
+          open={showScoreboard}
+          onClose={() => setShowScoreboard(false)}
+        />
+      )}
     </div>
   );
 };
