@@ -42,19 +42,19 @@ const slotHints: Record<string, string> = {
 
 // Positions: Preparation on elephant body, 4 stages on the 4 birds
 const slotPositions: Record<string, { top: string; left: string; width: string }> = {
-  preparation: { top: "45%", left: "35%", width: "22%" },    // Elephant body center
-  incubation: { top: "5%", left: "8%", width: "18%" },       // Bird 1 top-left
-  illumination: { top: "3%", left: "35%", width: "18%" },    // Bird 2 top-center
-  evaluation: { top: "5%", left: "62%", width: "18%" },      // Bird 3 top-right
-  elaboration: { top: "8%", left: "82%", width: "16%" },     // Bird 4 far-right
+  preparation: { top: "50%", left: "36%", width: "22%" },    // Elephant body center
+  incubation: { top: "28%", left: "10%", width: "18%" },     // Bird 1 – large swan left
+  illumination: { top: "14%", left: "30%", width: "18%" },   // Bird 2 – geese center-left
+  evaluation: { top: "15%", left: "50%", width: "18%" },     // Bird 3 – geese center-right
+  elaboration: { top: "18%", left: "68%", width: "16%" },    // Bird 4 – far-right birds
 };
 
 const quotePositions: Record<string, { top: string; left: string; width: string }> = {
-  preparation: { top: "58%", left: "33%", width: "24%" },    // Below elephant slot
-  incubation: { top: "18%", left: "5%", width: "22%" },      // Below bird 1
-  illumination: { top: "16%", left: "32%", width: "22%" },   // Below bird 2
-  evaluation: { top: "18%", left: "59%", width: "22%" },     // Below bird 3
-  elaboration: { top: "22%", left: "78%", width: "20%" },    // Below bird 4
+  preparation: { top: "63%", left: "34%", width: "24%" },    // Below elephant slot
+  incubation: { top: "40%", left: "7%", width: "22%" },      // Below bird 1
+  illumination: { top: "27%", left: "28%", width: "22%" },   // Below bird 2
+  evaluation: { top: "28%", left: "48%", width: "22%" },     // Below bird 3
+  elaboration: { top: "30%", left: "65%", width: "20%" },    // Below bird 4
 };
 
 export function PuzzleBoard({ phase, currentSlots, feedback, onSlotTap, onDrop, selectedPiece }: PuzzleBoardProps) {
@@ -105,7 +105,7 @@ export function PuzzleBoard({ phase, currentSlots, feedback, onSlotTap, onDrop, 
                           left: pos.left,
                           width: pos.width,
                         }}
-                        className={`flex h-7 items-center justify-center rounded-lg border-2 border-dashed text-[9px] font-semibold transition-all sm:h-9 sm:text-xs md:h-11 md:text-sm ${
+                        className={`flex h-8 items-center justify-center rounded-lg border-2 border-dashed text-[8px] font-semibold transition-all sm:h-9 sm:text-xs md:h-11 md:text-sm ${
                           stageSlot.filled
                             ? `${stageColors[stage.id]} border-solid text-white shadow-md`
                             : selectedPiece
