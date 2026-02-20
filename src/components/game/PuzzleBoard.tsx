@@ -1,5 +1,6 @@
 import { CREATIVITY_STAGES } from "@/lib/gameData";
 import elephantImg from "@/assets/elephant-puzzle.png";
+import { SparkleEffect } from "./SparkleEffect";
 
 interface SlotState {
   id: string;
@@ -144,6 +145,14 @@ export function PuzzleBoard({ phase, currentSlots, feedback, onSlotTap, onDrop, 
                 </button>
               )}
 
+              {/* Sparkle effect for stage slot */}
+              <SparkleEffect
+                trigger={feedback?.slotId === stageSlot?.id && feedback?.type === "correct" ? stageSlot?.id ?? null : null}
+                top={pos.top}
+                left={pos.left}
+                width={pos.width}
+              />
+
               {/* Quote slot (phase 2) – jigsaw shape */}
               {phase === 2 && quoteSlot && (
                 <button
@@ -185,6 +194,16 @@ export function PuzzleBoard({ phase, currentSlots, feedback, onSlotTap, onDrop, 
                     "📝 ?"
                   )}
                 </button>
+              )}
+
+              {/* Sparkle effect for quote slot */}
+              {phase === 2 && quoteSlot && (
+                <SparkleEffect
+                  trigger={feedback?.slotId === quoteSlot.id && feedback?.type === "correct" ? quoteSlot.id : null}
+                  top={qPos.top}
+                  left={qPos.left}
+                  width={qPos.width}
+                />
               )}
             </div>
           );
