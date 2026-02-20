@@ -353,6 +353,7 @@ const Game = () => {
             onSlotTap={handleSlotTap}
             onDrop={handleDrop}
             selectedPiece={selectedPiece}
+            completed={completed}
           />
         </div>
 
