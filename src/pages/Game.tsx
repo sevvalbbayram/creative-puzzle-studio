@@ -292,15 +292,25 @@ const Game = () => {
             <Users className="h-3 w-3" /> {players.length}
           </span>
           {isGameMaster && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => setShowScoreboard((v) => !v)}
-              aria-label="Toggle live scoreboard"
-            >
-              <Crown className="h-4 w-4" />
-            </Button>
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setShowScoreboard((v) => !v)}
+                aria-label="Toggle live scoreboard"
+              >
+                <Crown className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 gap-1 text-xs"
+                onClick={() => navigate(`/dashboard/${sessionId}`)}
+              >
+                📊 Dashboard
+              </Button>
+            </>
           )}
         </div>
       </header>
