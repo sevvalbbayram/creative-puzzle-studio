@@ -90,12 +90,12 @@ export function PuzzleBoard({ phase, currentSlots, feedback, onSlotTap, onDrop, 
                     width: pos.width,
                     clipPath: jigsawClip,
                   }}
-                  className={`flex h-8 items-center justify-center text-[7px] font-medium transition-all sm:h-10 sm:text-[9px] md:h-11 md:text-xs ${
+                  className={`flex h-8 items-center justify-center text-[7px] font-medium backdrop-blur-[1px] transition-all sm:h-10 sm:text-[9px] md:h-11 md:text-xs ${
                     stageSlot.filled
-                      ? `${colors.bg}/80 text-white/90 jigsaw-filled`
+                      ? `${colors.bg}/50 text-white/90 jigsaw-filled`
                       : selectedPiece
-                        ? "bg-black/30 text-white/80 animate-pulse jigsaw-empty-active"
-                        : "bg-black/20 text-white/70 hover:bg-black/30 jigsaw-empty"
+                        ? "bg-black/20 text-white/80 animate-pulse jigsaw-empty-active"
+                        : "bg-black/15 text-white/70 hover:bg-black/20 jigsaw-empty"
                   } ${
                     feedback?.slotId === stageSlot.id && feedback.type === "correct"
                       ? "animate-glow-correct"
@@ -140,12 +140,12 @@ export function PuzzleBoard({ phase, currentSlots, feedback, onSlotTap, onDrop, 
                     width: qPos.width,
                     clipPath: jigsawClip,
                   }}
-                  className={`flex min-h-[1.8rem] items-center justify-center p-1.5 text-[5px] leading-tight transition-all sm:min-h-[2.4rem] sm:text-[7px] md:min-h-[2.8rem] md:text-[10px] ${
+                  className={`flex min-h-[1.8rem] items-center justify-center p-1.5 text-[5px] leading-tight backdrop-blur-[1px] transition-all sm:min-h-[2.4rem] sm:text-[7px] md:min-h-[2.8rem] md:text-[10px] ${
                     quoteSlot.filled
-                      ? `${colors.bg}/80 text-white/90 jigsaw-filled`
+                      ? `${colors.bg}/50 text-white/90 jigsaw-filled`
                       : selectedPiece
-                        ? "bg-black/25 text-white/70 animate-pulse jigsaw-empty-active"
-                        : "bg-black/15 text-white/60 hover:bg-black/25 jigsaw-empty"
+                        ? "bg-black/15 text-white/70 animate-pulse jigsaw-empty-active"
+                        : "bg-black/10 text-white/60 hover:bg-black/15 jigsaw-empty"
                   } ${
                     feedback?.slotId === quoteSlot.id && feedback.type === "correct"
                       ? "animate-glow-correct"
