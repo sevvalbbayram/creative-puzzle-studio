@@ -17,42 +17,42 @@ interface PuzzleBoardProps {
   selectedPiece: string | null;
 }
 
-const stageColors: Record<string, string> = {
-  preparation: "bg-stage-preparation",
-  incubation: "bg-stage-incubation",
-  illumination: "bg-stage-illumination",
-  evaluation: "bg-stage-evaluation",
-  elaboration: "bg-stage-elaboration",
+const stageColors: Record<string, { bg: string; border: string }> = {
+  preparation: { bg: "bg-stage-preparation", border: "border-stage-preparation" },
+  incubation: { bg: "bg-stage-incubation", border: "border-stage-incubation" },
+  illumination: { bg: "bg-stage-illumination", border: "border-stage-illumination" },
+  evaluation: { bg: "bg-stage-evaluation", border: "border-stage-evaluation" },
+  elaboration: { bg: "bg-stage-elaboration", border: "border-stage-elaboration" },
 };
 
-// Permanent labels for each slot
+// Permanent labels
 const slotLabels: Record<string, { emoji: string; label: string }> = {
-  preparation: { emoji: "🐘", label: "Body" },
-  incubation: { emoji: "🐦", label: "Bird 1" },
-  illumination: { emoji: "🐦", label: "Bird 2" },
-  evaluation: { emoji: "🐦", label: "Bird 3" },
-  elaboration: { emoji: "🐦", label: "Bird 4" },
+  preparation: { emoji: "🐘", label: "BODY" },
+  incubation: { emoji: "🐦", label: "BIRD 1" },
+  illumination: { emoji: "🐦", label: "BIRD 2" },
+  evaluation: { emoji: "🐦", label: "BIRD 3" },
+  elaboration: { emoji: "🐦", label: "BIRD 4" },
 };
 
-// Positions: Adjacent to the animals, NOT directly on top
+// Fine-tuned positions: adjacent to animals, not covering them
 const slotPositions: Record<string, { top: string; left: string; width: string }> = {
-  preparation: { top: "72%", left: "32%", width: "26%" },     // Below elephant body
-  incubation: { top: "42%", left: "2%", width: "20%" },       // Below-left of bird 1
-  illumination: { top: "30%", left: "24%", width: "20%" },    // Below bird 2
-  evaluation: { top: "30%", left: "50%", width: "20%" },      // Below bird 3
-  elaboration: { top: "34%", left: "74%", width: "20%" },     // Below bird 4
+  preparation: { top: "68%", left: "30%", width: "24%" },     // Below elephant's back
+  incubation: { top: "46%", left: "3%", width: "18%" },       // Below the large swan (left)
+  illumination: { top: "38%", left: "24%", width: "18%" },    // Below geese cluster (center-left)
+  evaluation: { top: "36%", left: "44%", width: "18%" },      // Below geese (center-right)
+  elaboration: { top: "38%", left: "64%", width: "18%" },     // Below far-right birds
 };
 
 const quotePositions: Record<string, { top: string; left: string; width: string }> = {
-  preparation: { top: "85%", left: "30%", width: "28%" },
-  incubation: { top: "55%", left: "0%", width: "24%" },
-  illumination: { top: "43%", left: "22%", width: "24%" },
-  evaluation: { top: "43%", left: "48%", width: "24%" },
-  elaboration: { top: "48%", left: "72%", width: "24%" },
+  preparation: { top: "82%", left: "28%", width: "28%" },
+  incubation: { top: "58%", left: "1%", width: "22%" },
+  illumination: { top: "50%", left: "22%", width: "22%" },
+  evaluation: { top: "48%", left: "42%", width: "22%" },
+  elaboration: { top: "50%", left: "62%", width: "22%" },
 };
 
-// Jigsaw-shaped clip path for slots
-const jigsawSlotPath = "polygon(10% 0%, 40% 0%, 42% -6%, 50% -8%, 58% -6%, 60% 0%, 90% 0%, 100% 10%, 106% 42%, 108% 50%, 106% 58%, 100% 60%, 100% 90%, 90% 100%, 60% 100%, 58% 106%, 50% 108%, 42% 106%, 40% 100%, 10% 100%, 0% 90%, -6% 58%, -8% 50%, -6% 42%, 0% 40%, 0% 10%)";
+// Jigsaw tab clip path
+const jigsawClip = "polygon(8% 0%, 36% 0%, 38% 5%, 50% 8%, 62% 5%, 64% 0%, 92% 0%, 100% 8%, 100% 36%, 105% 38%, 108% 50%, 105% 62%, 100% 64%, 100% 92%, 92% 100%, 64% 100%, 62% 95%, 50% 92%, 38% 95%, 36% 100%, 8% 100%, 0% 92%, 0% 64%, -5% 62%, -8% 50%, -5% 38%, 0% 36%, 0% 8%)";
 
 export function PuzzleBoard({ phase, currentSlots, feedback, onSlotTap, onDrop, selectedPiece }: PuzzleBoardProps) {
   const handleDragOver = (e: React.DragEvent) => {
@@ -69,7 +69,6 @@ export function PuzzleBoard({ phase, currentSlots, feedback, onSlotTap, onDrop, 
         draggable={false}
       />
 
-      {/* Drop Slots positioned adjacent to birds and elephant */}
       <div className="absolute inset-0">
         {CREATIVITY_STAGES.map((stage, i) => {
           const stageSlot = currentSlots.find(
@@ -81,6 +80,7 @@ export function PuzzleBoard({ phase, currentSlots, feedback, onSlotTap, onDrop, 
           const pos = slotPositions[stage.id];
           const qPos = quotePositions[stage.id];
           const labelInfo = slotLabels[stage.id];
+          const colors = stageColors[stage.id];
 
           return (
             <div key={stage.id}>
@@ -96,12 +96,12 @@ export function PuzzleBoard({ phase, currentSlots, feedback, onSlotTap, onDrop, 
                 className="flex items-center justify-center gap-1 pb-0.5 pointer-events-none select-none"
               >
                 <span className="text-xs sm:text-sm drop-shadow-md">{labelInfo.emoji}</span>
-                <span className="text-[7px] sm:text-[9px] md:text-xs font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] tracking-wide uppercase">
+                <span className="text-[7px] sm:text-[9px] md:text-xs font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] tracking-wider uppercase">
                   {labelInfo.label}
                 </span>
               </div>
 
-              {/* Stage name slot – jigsaw shape */}
+              {/* Stage slot – jigsaw piece shape */}
               {stageSlot && (
                 <button
                   type="button"
@@ -116,14 +116,14 @@ export function PuzzleBoard({ phase, currentSlots, feedback, onSlotTap, onDrop, 
                     top: pos.top,
                     left: pos.left,
                     width: pos.width,
-                    clipPath: jigsawSlotPath,
+                    clipPath: jigsawClip,
                   }}
-                  className={`flex h-9 items-center justify-center text-[8px] font-bold transition-all sm:h-11 sm:text-xs md:h-14 md:text-sm ${
+                  className={`flex h-10 items-center justify-center text-[7px] font-bold transition-all sm:h-12 sm:text-[10px] md:h-14 md:text-sm ${
                     stageSlot.filled
-                      ? `${stageColors[stage.id]} text-white shadow-lg`
+                      ? `${colors.bg} text-white jigsaw-filled`
                       : selectedPiece
-                        ? "bg-black/50 text-white/90 ring-2 ring-primary/60 animate-pulse"
-                        : "bg-black/40 text-white/80 hover:bg-black/50 border-white/30"
+                        ? "bg-black/50 text-white/90 animate-pulse jigsaw-empty-active"
+                        : "bg-black/35 text-white/80 hover:bg-black/50 jigsaw-empty"
                   } ${
                     feedback?.slotId === stageSlot.id && feedback.type === "correct"
                       ? "animate-glow-correct"
@@ -136,7 +136,7 @@ export function PuzzleBoard({ phase, currentSlots, feedback, onSlotTap, onDrop, 
                 >
                   {stageSlot.filled ? (
                     <span className="flex items-center gap-1">
-                      <span>🧩</span> {stage.name}
+                      <span className="text-[10px] sm:text-xs">🧩</span> {stage.name}
                     </span>
                   ) : (
                     `${i + 1}. ???`
@@ -159,14 +159,14 @@ export function PuzzleBoard({ phase, currentSlots, feedback, onSlotTap, onDrop, 
                     top: qPos.top,
                     left: qPos.left,
                     width: qPos.width,
-                    clipPath: jigsawSlotPath,
+                    clipPath: jigsawClip,
                   }}
-                  className={`flex min-h-[2rem] items-center justify-center p-2 text-[7px] leading-tight transition-all sm:min-h-[2.8rem] sm:text-[9px] md:min-h-[3.2rem] md:text-xs ${
+                  className={`flex min-h-[2.2rem] items-center justify-center p-2 text-[6px] leading-tight transition-all sm:min-h-[3rem] sm:text-[8px] md:min-h-[3.4rem] md:text-xs ${
                     quoteSlot.filled
-                      ? `${stageColors[stage.id]} text-white shadow-lg`
+                      ? `${colors.bg} text-white jigsaw-filled`
                       : selectedPiece
-                        ? "bg-black/40 text-white/80 ring-2 ring-accent/50 animate-pulse"
-                        : "bg-black/30 text-white/70 hover:bg-black/40"
+                        ? "bg-black/40 text-white/80 animate-pulse jigsaw-empty-active"
+                        : "bg-black/25 text-white/70 hover:bg-black/40 jigsaw-empty"
                   } ${
                     feedback?.slotId === quoteSlot.id && feedback.type === "correct"
                       ? "animate-glow-correct"
@@ -179,7 +179,7 @@ export function PuzzleBoard({ phase, currentSlots, feedback, onSlotTap, onDrop, 
                 >
                   {quoteSlot.filled ? (
                     <span className="flex items-center gap-1">
-                      <span>🧩</span> {stage.quote.slice(0, 28)}...
+                      <span className="text-[8px]">🧩</span> {stage.quote.slice(0, 25)}...
                     </span>
                   ) : (
                     "📝 ?"

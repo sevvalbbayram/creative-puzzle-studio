@@ -139,3 +139,18 @@
 .animate-glow-correct {
   animation: glow-correct 0.8s ease-out;
 }
+
+/* Jigsaw slot visual effects */
+.jigsaw-empty {
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+  backdrop-filter: blur(2px);
+}
+
+.jigsaw-empty-active {
+  filter: drop-shadow(0 0 8px hsl(var(--primary) / 0.5)) drop-shadow(0 2px 6px rgba(0,0,0,0.3));
+  backdrop-filter: blur(2px);
+}
+
+.jigsaw-filled {
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.35)) drop-shadow(0 0 10px rgba(255,255,255,0.15));
+}
