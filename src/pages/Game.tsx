@@ -52,6 +52,8 @@ const Game = () => {
   const [showInstructions, setShowInstructions] = useState(false);
   const [phaseTransition, setPhaseTransition] = useState(false);
   const [showHalfwayToast, setShowHalfwayToast] = useState(false);
+  const [comboStreak, setComboStreak] = useState(0);
+  const [showCombo, setShowCombo] = useState(false);
   const halfwayTriggered = useRef(false);
   const startTimeRef = useRef<number>(Date.now());
   const timerRef = useRef<ReturnType<typeof setInterval>>();
@@ -168,17 +170,24 @@ const Game = () => {
 
       if (piece.stageId === slotStageId && piece.type === slotType) {
         // Correct!
+        const newStreak = comboStreak + 1;
+        setComboStreak(newStreak);
         playCorrectSound();
-        confetti({ particleCount: 40, spread: 50, origin: { y: 0.6 } });
+        confetti({ particleCount: 40 + newStreak * 10, spread: 50 + newStreak * 5, origin: { y: 0.6 } });
         setFeedback({ type: "correct", slotId });
         setPieces((prev) => prev.map((p) => (p.id === piece.id ? { ...p, placed: true } : p)));
         setSlots((prev) => prev.map((s) => (s.id === slotId ? { ...s, filled: true } : s)));
+        if (newStreak >= 2) {
+          setShowCombo(true);
+          setTimeout(() => setShowCombo(false), 1200);
+        }
         setTimeout(() => setFeedback(null), 800);
       } else {
         // Incorrect
         playIncorrectSound();
         setFeedback({ type: "incorrect", slotId });
         setIncorrectAttempts((prev) => prev + 1);
+        setComboStreak(0);
         setTimeout(() => setFeedback(null), 500);
       }
       setSelectedPiece(null);
@@ -319,6 +328,28 @@ const Game = () => {
           onDragEnd={handleDragEnd}
         />
       </main>
+
+      {/* Combo Streak Toast */}
+      <AnimatePresence>
+        {showCombo && comboStreak >= 2 && (
+          <motion.div
+            key={`combo-${comboStreak}`}
+            initial={{ opacity: 0, scale: 0.5, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: -10 }}
+            transition={{ type: "spring", damping: 14 }}
+            className="fixed right-4 top-20 z-50 rounded-2xl bg-card px-5 py-3 shadow-2xl border border-accent/40 text-center"
+          >
+            <span className="text-2xl">🔥</span>
+            <p className="font-display text-lg font-bold text-foreground">
+              {comboStreak}x Combo!
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {comboStreak >= 5 ? "Unstoppable!" : comboStreak >= 3 ? "On fire!" : "Nice streak!"}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Halfway Celebration Toast */}
       <AnimatePresence>
