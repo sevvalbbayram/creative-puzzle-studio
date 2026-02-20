@@ -150,9 +150,18 @@ export function useGameSession(sessionId: string | null, userId: string | null) 
     if (!sessionId) return;
     await supabase
       .from("game_sessions")
-      .update({ status: "finished", finished_at: new Date().toISOString() })
+      .update({ status: "finished", finished_at: new Date().toISOString(), paused_at: null })
       .eq("id", sessionId);
   }, [sessionId]);
+
+  const togglePause = useCallback(async () => {
+    if (!sessionId || !session) return;
+    const isPaused = !!session.paused_at;
+    await supabase
+      .from("game_sessions")
+      .update({ paused_at: isPaused ? null : new Date().toISOString() })
+      .eq("id", sessionId);
+  }, [sessionId, session]);
 
   const updateDifficulty = useCallback(
     async (difficulty: string) => {
@@ -202,6 +211,7 @@ export function useGameSession(sessionId: string | null, userId: string | null) 
     joinSession,
     startGame,
     endGame,
+    togglePause,
     updateDifficulty,
     kickPlayer,
     updateScore,

@@ -96,6 +96,7 @@ export type Database = {
           difficulty: Database["public"]["Enums"]["game_difficulty"]
           finished_at: string | null
           id: string
+          paused_at: string | null
           started_at: string | null
           status: Database["public"]["Enums"]["game_status"]
         }
@@ -106,6 +107,7 @@ export type Database = {
           difficulty?: Database["public"]["Enums"]["game_difficulty"]
           finished_at?: string | null
           id?: string
+          paused_at?: string | null
           started_at?: string | null
           status?: Database["public"]["Enums"]["game_status"]
         }
@@ -116,6 +118,7 @@ export type Database = {
           difficulty?: Database["public"]["Enums"]["game_difficulty"]
           finished_at?: string | null
           id?: string
+          paused_at?: string | null
           started_at?: string | null
           status?: Database["public"]["Enums"]["game_status"]
         }

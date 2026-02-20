@@ -84,14 +84,26 @@ const Game = () => {
     setSlots(stageSlots);
   }, [stages]);
 
-  // Timer
+  const isPaused = !!session?.paused_at;
+  const pausedAccumulatedRef = useRef(0);
+  const lastPauseRef = useRef<number | null>(null);
+
+  // Timer — pauses when session is paused
   useEffect(() => {
     startTimeRef.current = Date.now();
     timerRef.current = setInterval(() => {
-      setElapsedMs(Date.now() - startTimeRef.current);
+      if (isPaused) {
+        if (!lastPauseRef.current) lastPauseRef.current = Date.now();
+        return;
+      }
+      if (lastPauseRef.current) {
+        pausedAccumulatedRef.current += Date.now() - lastPauseRef.current;
+        lastPauseRef.current = null;
+      }
+      setElapsedMs(Date.now() - startTimeRef.current - pausedAccumulatedRef.current);
     }, 100);
     return () => clearInterval(timerRef.current);
-  }, []);
+  }, [isPaused]);
 
   // Redirect when game finishes
   useEffect(() => {
@@ -354,6 +366,36 @@ const Game = () => {
           onDragEnd={handleDragEnd}
         />
       </main>
+
+      {/* Paused Overlay for Players */}
+      <AnimatePresence>
+        {isPaused && !completed && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[55] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.8 }}
+              className="mx-4 w-full max-w-sm rounded-2xl bg-card p-8 text-center shadow-2xl"
+            >
+              <span className="text-5xl">⏸️</span>
+              <h2 className="mt-4 font-display text-2xl font-bold text-foreground">Game Paused</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                The teacher has paused the game. Please wait...
+              </p>
+              <div className="mt-4 flex items-center justify-center gap-1">
+                <span className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:0ms]" />
+                <span className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:150ms]" />
+                <span className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:300ms]" />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Teacher Broadcast Toast */}
       <AnimatePresence>
