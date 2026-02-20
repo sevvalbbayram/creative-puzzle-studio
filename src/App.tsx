@@ -8,6 +8,7 @@ import Lobby from "./pages/Lobby";
 import Game from "./pages/Game";
 import Results from "./pages/Results";
 import Leaderboard from "./pages/Leaderboard";
+import TeacherDashboard from "./pages/TeacherDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/lobby/:sessionId" element={<Lobby />} />
           <Route path="/game/:sessionId" element={<Game />} />
           <Route path="/results/:sessionId" element={<Results />} />
+          <Route path="/dashboard/:sessionId" element={<TeacherDashboard />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
