@@ -98,11 +98,8 @@ const Results = () => {
           <CardContent>
             <div className="space-y-2">
               {sortedPlayers.map((p, i) => (
-                <motion.div
+                <div
                   key={p.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.1 }}
                   className={`flex items-center justify-between rounded-lg border p-3 ${
                     p.user_id === userId ? "border-primary bg-primary/5" : ""
                   }`}
@@ -130,7 +127,7 @@ const Results = () => {
                     </div>
                   </div>
                   <span className="text-lg font-bold text-primary">{p.score}</span>
-                </motion.div>
+                </div>
               ))}
             </div>
           </CardContent>

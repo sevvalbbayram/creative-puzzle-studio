@@ -29,7 +29,7 @@ export function InstructionsModal() {
             How to Play
           </DialogTitle>
           <DialogDescription>
-            Learn the 5 stages of creativity by solving this puzzle!
+            Learn the 4 pillars of creativity by solving this puzzle!
           </DialogDescription>
         </DialogHeader>
 
@@ -41,7 +41,7 @@ export function InstructionsModal() {
                 <Target className="h-4 w-4" /> Phase 1: Stage Names
               </h4>
               <p className="text-sm text-muted-foreground">
-                Drag and drop the 5 creativity stage names (Preparation, Incubation, Illumination, Evaluation, Elaboration) into the correct slots on the elephant puzzle.
+                Drag and drop the 4 creativity pillars (Preparation, Incubation, Illumination, Verification) into the correct slots on the puzzle.
               </p>
             </div>
           </div>
