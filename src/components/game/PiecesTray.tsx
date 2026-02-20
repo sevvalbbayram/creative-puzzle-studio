@@ -32,15 +32,15 @@ export function PiecesTray({ phase, pieces, selectedPiece, onPieceSelect, onDrag
   const unplaced = pieces.filter((p) => !p.placed);
 
   return (
-    <div className="w-full md:w-80">
-      <h3 className="mb-3 flex items-center gap-2 font-display text-base font-semibold sm:text-lg">
-        <span className="text-xl">🧩</span>
+    <div className="w-full md:w-72 lg:w-80">
+      <h3 className="mb-2 flex items-center gap-2 font-display text-sm font-semibold sm:mb-3 sm:text-base md:text-lg">
+        <span className="text-lg sm:text-xl">🧩</span>
         {phase === 1 ? "Stage Names" : "Quotes"}
       </h3>
-      <p className="mb-3 text-xs text-muted-foreground">
+      <p className="mb-2 text-[10px] text-muted-foreground sm:mb-3 sm:text-xs">
         Drag a piece to a slot, or tap to select then tap a slot
       </p>
-      <div className="flex flex-wrap gap-3 md:flex-col">
+      <div className="flex flex-wrap gap-2 sm:gap-3 md:flex-col">
         <AnimatePresence>
           {unplaced.map((piece) => (
             <motion.div
@@ -55,7 +55,7 @@ export function PiecesTray({ phase, pieces, selectedPiece, onPieceSelect, onDrag
               onDragEnd={() => onDragEnd()}
               onClick={() => onPieceSelect(piece.id)}
               style={{ clipPath: jigsawPiecePath }}
-              className={`group relative cursor-grab select-none border-2 p-4 px-5 text-left text-xs font-medium shadow-md transition-all active:cursor-grabbing sm:p-5 sm:px-6 sm:text-sm ${
+              className={`group relative cursor-grab select-none border-2 p-2.5 px-3 text-left text-[11px] font-medium shadow-md transition-all active:cursor-grabbing sm:p-4 sm:px-5 sm:text-xs md:text-sm ${
                 selectedPiece === piece.id
                   ? `${stageColorMap[piece.stageId] || "border-primary bg-primary/10"} ring-2 ring-primary/40 scale-[1.04]`
                   : `${stageColorMap[piece.stageId] || "border-border bg-card"}`
