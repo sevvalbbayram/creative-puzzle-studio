@@ -158,8 +158,36 @@ const TeacherDashboard = () => {
                     Send
                   </Button>
                 </form>
-                <p className="mt-1 text-[11px] text-muted-foreground">
-                  Message will appear as a notification on all students' screens
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {["👏 Great job!", "⏰ Hurry up!", "⏳ 2 minutes left!", "🤔 Read carefully!", "💪 Almost there!"].map((preset) => (
+                    <Button
+                      key={preset}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-xs"
+                      disabled={sending}
+                      onClick={() => {
+                        setBroadcastMsg(preset);
+                      }}
+                      onDoubleClick={() => {
+                        setBroadcastMsg(preset);
+                        // Auto-send on double-click
+                        supabase.from("broadcast_messages").insert({
+                          session_id: sessionId!,
+                          sender_id: userId!,
+                          message: preset,
+                        }).then(({ error }) => {
+                          if (!error) toast.success("Sent: " + preset);
+                        });
+                      }}
+                    >
+                      {preset}
+                    </Button>
+                  ))}
+                </div>
+                <p className="mt-1.5 text-[11px] text-muted-foreground">
+                  Tap to fill, double-tap to send instantly
                 </p>
               </CardContent>
             </Card>
