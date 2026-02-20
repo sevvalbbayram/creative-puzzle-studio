@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useCallback, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Clock, HelpCircle, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -49,6 +50,7 @@ const Game = () => {
   const [elapsedMs, setElapsedMs] = useState(0);
   const [completed, setCompleted] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
+  const [phaseTransition, setPhaseTransition] = useState(false);
   const startTimeRef = useRef<number>(Date.now());
   const timerRef = useRef<ReturnType<typeof setInterval>>();
 
@@ -93,25 +95,33 @@ const Game = () => {
 
   // Move to phase 2 when all stages placed
   useEffect(() => {
-    if (phase === 1) {
+    if (phase === 1 && !phaseTransition) {
       const allStagesPlaced = slots.every((s) => s.type === "stage" && s.filled);
       if (allStagesPlaced && slots.length > 0) {
-        const quotePieces: PieceState[] = CREATIVITY_STAGES.map((s) => ({
-          id: `quote-${s.id}`,
-          type: "quote" as const,
-          stageId: s.id,
-          label: s.quote,
-          placed: false,
-        }));
-        setPieces(shuffleArray(quotePieces));
-        const quoteSlots = CREATIVITY_STAGES.map((s) => ({
-          id: `slot-quote-${s.id}`,
-          stageId: s.id,
-          filled: false,
-          type: "quote" as const,
-        }));
-        setSlots((prev) => [...prev, ...quoteSlots]);
-        setPhase(2);
+        // Show transition overlay before moving to phase 2
+        setPhaseTransition(true);
+        playCorrectSound();
+        confetti({ particleCount: 80, spread: 70, origin: { y: 0.5 } });
+
+        setTimeout(() => {
+          const quotePieces: PieceState[] = CREATIVITY_STAGES.map((s) => ({
+            id: `quote-${s.id}`,
+            type: "quote" as const,
+            stageId: s.id,
+            label: s.quote,
+            placed: false,
+          }));
+          setPieces(shuffleArray(quotePieces));
+          const quoteSlots = CREATIVITY_STAGES.map((s) => ({
+            id: `slot-quote-${s.id}`,
+            stageId: s.id,
+            filled: false,
+            type: "quote" as const,
+          }));
+          setSlots((prev) => [...prev, ...quoteSlots]);
+          setPhase(2);
+          setPhaseTransition(false);
+        }, 2500);
       }
     }
   }, [phase, slots]);
@@ -274,6 +284,47 @@ const Game = () => {
           onPieceSelect={handlePieceSelect}
         />
       </main>
+
+      {/* Phase Transition Overlay */}
+      <AnimatePresence>
+        {phaseTransition && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.5, y: 30 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ type: "spring", damping: 15 }}
+              className="mx-4 w-full max-w-sm rounded-2xl bg-card p-8 text-center shadow-2xl"
+            >
+              <motion.div
+                initial={{ rotate: -10 }}
+                animate={{ rotate: [0, 10, -10, 0] }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                className="mx-auto mb-4 text-5xl"
+              >
+                🎉
+              </motion.div>
+              <h2 className="font-display text-2xl font-bold text-foreground">
+                Stage Names Complete!
+              </h2>
+              <p className="mt-2 text-muted-foreground">
+                Now match each creativity quote to its stage...
+              </p>
+              <motion.div
+                initial={{ width: "0%" }}
+                animate={{ width: "100%" }}
+                transition={{ duration: 2.5, ease: "linear" }}
+                className="mx-auto mt-4 h-1 rounded-full bg-primary"
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Completion Overlay */}
       <CompletionOverlay
