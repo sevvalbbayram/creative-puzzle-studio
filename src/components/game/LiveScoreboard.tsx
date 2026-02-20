@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Clock, Target, CheckCircle2, Loader2, X } from "lucide-react";
+import { Trophy, Clock, Target, CheckCircle2, Loader2, X, StopCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -9,9 +9,10 @@ interface LiveScoreboardProps {
   players: GamePlayer[];
   open: boolean;
   onClose: () => void;
+  onEndGame?: () => void;
 }
 
-export function LiveScoreboard({ players, open, onClose }: LiveScoreboardProps) {
+export function LiveScoreboard({ players, open, onClose, onEndGame }: LiveScoreboardProps) {
   const formatTime = (ms: number) => {
     const s = Math.floor(ms / 1000);
     const m = Math.floor(s / 60);
@@ -107,11 +108,21 @@ export function LiveScoreboard({ players, open, onClose }: LiveScoreboardProps) 
             </div>
           </div>
 
-          <div className="border-t px-4 py-3">
+          <div className="border-t px-4 py-3 space-y-2">
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>{sorted.filter((p) => p.completed).length}/{sorted.length} finished</span>
               <span>Updates in real-time</span>
             </div>
+            {onEndGame && (
+              <Button
+                variant="destructive"
+                className="w-full gap-2"
+                onClick={onEndGame}
+              >
+                <StopCircle className="h-4 w-4" />
+                End Game for All
+              </Button>
+            )}
           </div>
         </motion.div>
       )}
