@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, Crown, HelpCircle, Users } from "lucide-react";
+import { Clock, HelpCircle, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useAnonymousAuth } from "@/hooks/useAnonymousAuth";
@@ -14,7 +14,6 @@ import { PiecesTray } from "@/components/game/PiecesTray";
 import { CompletionOverlay } from "@/components/game/CompletionOverlay";
 import { InstructionsModal } from "@/components/InstructionsModal";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { LiveScoreboard } from "@/components/game/LiveScoreboard";
 import confetti from "canvas-confetti";
 
 interface PieceState {
@@ -38,9 +37,8 @@ const Game = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
   const { userId } = useAnonymousAuth();
-  const { session, players, currentPlayer, updateScore, endGame } = useGameSession(sessionId ?? null, userId);
+  const { session, players, currentPlayer, updateScore } = useGameSession(sessionId ?? null, userId);
   const isGameMaster = currentPlayer?.is_game_master ?? false;
-  const [showScoreboard, setShowScoreboard] = useState(false);
 
   const [phase, setPhase] = useState<1 | 2>(1);
   const [pieces, setPieces] = useState<PieceState[]>([]);
@@ -101,6 +99,13 @@ const Game = () => {
       navigate(`/results/${session.id}`);
     }
   }, [session?.status, session?.id, navigate]);
+
+  // Redirect Game Master to the Teacher Dashboard
+  useEffect(() => {
+    if (isGameMaster && session) {
+      navigate(`/dashboard/${sessionId}`, { replace: true });
+    }
+  }, [isGameMaster, session, sessionId, navigate]);
 
   // Listen for teacher broadcast messages
   useEffect(() => {
@@ -313,27 +318,6 @@ const Game = () => {
           <span className="flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground sm:px-3 sm:text-xs">
             <Users className="h-3 w-3" /> {players.length}
           </span>
-          {isGameMaster && (
-            <>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => setShowScoreboard((v) => !v)}
-                aria-label="Toggle live scoreboard"
-              >
-                <Crown className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 gap-1 text-xs"
-                onClick={() => navigate(`/dashboard/${sessionId}`)}
-              >
-                📊 Dashboard
-              </Button>
-            </>
-          )}
         </div>
       </header>
 
@@ -478,15 +462,6 @@ const Game = () => {
         onViewResults={() => navigate(`/results/${sessionId}`)}
       />
 
-      {/* Game Master Live Scoreboard */}
-      {isGameMaster && (
-        <LiveScoreboard
-          players={players}
-          open={showScoreboard}
-          onClose={() => setShowScoreboard(false)}
-          onEndGame={endGame}
-        />
-      )}
     </div>
   );
 };

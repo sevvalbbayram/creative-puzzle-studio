@@ -104,7 +104,7 @@ const TeacherDashboard = () => {
       {/* Header */}
       <header className="sticky top-0 z-30 flex items-center justify-between border-b bg-card/80 px-4 py-3 backdrop-blur-sm">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(`/game/${sessionId}`)}>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(`/`)}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <h1 className="font-display text-lg font-bold">Teacher Dashboard</h1>
