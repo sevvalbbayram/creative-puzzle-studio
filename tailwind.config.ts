@@ -13,7 +13,22 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        display: ["Fredoka", "sans-serif"],
+        body: ["Inter", "sans-serif"],
+      },
       colors: {
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        stage: {
+          preparation: "hsl(var(--stage-preparation))",
+          incubation: "hsl(var(--stage-incubation))",
+          illumination: "hsl(var(--stage-illumination))",
+          evaluation: "hsl(var(--stage-evaluation))",
+          elaboration: "hsl(var(--stage-elaboration))",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
