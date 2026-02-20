@@ -1,9 +1,10 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Trophy, Clock, Target, CheckCircle2, Loader2, Users,
   StopCircle, ArrowLeft, Puzzle, BarChart3, Download, Send,
+  Pause, Play, Eye, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,16 +15,43 @@ import { useGameSession } from "@/hooks/useGameSession";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import puzzleBgImg from "@/assets/puzzle-background.png";
+import { CREATIVITY_STAGES } from "@/lib/gameData";
+
+const slotPositions: Record<string, { top: string; left: string; width: string }> = {
+  preparation: { top: "24%", left: "10%", width: "13%" },
+  incubation: { top: "18%", left: "28%", width: "13%" },
+  illumination: { top: "14%", left: "45%", width: "13%" },
+  verification: { top: "6%", left: "66%", width: "13%" },
+};
+
+const quotePositions: Record<string, { top: string; left: string; width: string }> = {
+  preparation: { top: "38%", left: "8%", width: "16%" },
+  incubation: { top: "32%", left: "26%", width: "16%" },
+  illumination: { top: "28%", left: "43%", width: "16%" },
+  verification: { top: "20%", left: "64%", width: "16%" },
+};
+
+const jigsawClip = "polygon(8% 0%, 36% 0%, 38% 5%, 50% 8%, 62% 5%, 64% 0%, 92% 0%, 100% 8%, 100% 36%, 105% 38%, 108% 50%, 105% 62%, 100% 64%, 100% 92%, 92% 100%, 64% 100%, 62% 95%, 50% 92%, 38% 95%, 36% 100%, 8% 100%, 0% 92%, 0% 64%, -5% 62%, -8% 50%, -5% 38%, 0% 36%, 0% 8%)";
+
+const stageColors: Record<string, string> = {
+  preparation: "bg-stage-preparation/40",
+  incubation: "bg-stage-incubation/40",
+  illumination: "bg-stage-illumination/40",
+  verification: "bg-stage-verification/40",
+};
 
 const TeacherDashboard = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
   const { userId } = useAnonymousAuth();
-  const { session, players, currentPlayer, endGame } = useGameSession(sessionId ?? null, userId);
+  const { session, players, currentPlayer, endGame, togglePause } = useGameSession(sessionId ?? null, userId);
   const [broadcastMsg, setBroadcastMsg] = useState("");
   const [sending, setSending] = useState(false);
+  const [showPuzzlePreview, setShowPuzzlePreview] = useState(false);
 
   const isGameMaster = currentPlayer?.is_game_master ?? false;
+  const isPaused = !!session?.paused_at;
 
   useEffect(() => {
     if (session?.status === "finished") {
@@ -111,6 +139,11 @@ const TeacherDashboard = () => {
           <span className="rounded-full bg-muted px-3 py-0.5 text-xs font-medium text-muted-foreground">
             {session.code}
           </span>
+          {isPaused && (
+            <span className="rounded-full bg-destructive/10 px-3 py-0.5 text-xs font-bold text-destructive animate-pulse">
+              ⏸ PAUSED
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <span className="flex items-center gap-1 rounded-full bg-muted px-3 py-0.5 text-xs font-medium text-muted-foreground">
@@ -129,6 +162,36 @@ const TeacherDashboard = () => {
             <SummaryCard icon={<BarChart3 className="h-5 w-5 text-secondary" />} label="Avg Score" value={String(avgScore)} />
             <SummaryCard icon={<Clock className="h-5 w-5 text-accent-foreground" />} label="Best Time" value={bestTime === Infinity ? "—" : formatTime(bestTime)} />
           </div>
+
+          {/* Timer Control + Watch Live */}
+          {isGameMaster && (
+            <div className="flex flex-wrap gap-3">
+              <Button
+                variant={isPaused ? "default" : "outline"}
+                size="lg"
+                className="flex-1 gap-2 min-w-[180px]"
+                onClick={togglePause}
+              >
+                {isPaused ? (
+                  <>
+                    <Play className="h-5 w-5" /> Resume Game
+                  </>
+                ) : (
+                  <>
+                    <Pause className="h-5 w-5" /> Pause Game
+                  </>
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                className="flex-1 gap-2 min-w-[180px]"
+                onClick={() => setShowPuzzlePreview(true)}
+              >
+                <Eye className="h-5 w-5" /> Watch Live
+              </Button>
+            </div>
+          )}
 
           {/* Broadcast Message */}
           {isGameMaster && (
@@ -167,12 +230,9 @@ const TeacherDashboard = () => {
                       size="sm"
                       className="h-7 text-xs"
                       disabled={sending}
-                      onClick={() => {
-                        setBroadcastMsg(preset);
-                      }}
+                      onClick={() => setBroadcastMsg(preset)}
                       onDoubleClick={() => {
                         setBroadcastMsg(preset);
-                        // Auto-send on double-click
                         supabase.from("broadcast_messages").insert({
                           session_id: sessionId!,
                           sender_id: userId!,
@@ -224,12 +284,8 @@ const TeacherDashboard = () => {
             <CardContent>
               <div className="space-y-2">
                 {sorted.map((player, i) => (
-                  <motion.div
+                  <div
                     key={player.id}
-                    layout
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.03 }}
                     className={`flex items-center justify-between rounded-lg border p-3 transition-colors ${
                       player.completed
                         ? "border-success/30 bg-success/5"
@@ -259,7 +315,7 @@ const TeacherDashboard = () => {
                         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                       )}
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
                 {sorted.length === 0 && (
                   <p className="py-8 text-center text-sm text-muted-foreground">No players connected yet</p>
@@ -276,6 +332,84 @@ const TeacherDashboard = () => {
           )}
         </div>
       </main>
+
+      {/* Watch Live Puzzle Preview Modal */}
+      <AnimatePresence>
+        {showPuzzlePreview && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            onClick={() => setShowPuzzlePreview(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="relative w-full max-w-3xl rounded-2xl bg-card p-4 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="font-display text-lg font-bold flex items-center gap-2">
+                  <Eye className="h-5 w-5 text-primary" /> Puzzle Preview
+                </h2>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShowPuzzlePreview(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mb-3">
+                This is what students see — slot positions on the puzzle board.
+              </p>
+              <div className="relative mx-auto aspect-[4/3] w-full overflow-hidden rounded-xl border-2 border-primary/20">
+                <img
+                  src={puzzleBgImg}
+                  alt="Puzzle preview"
+                  className="h-full w-full object-cover rounded-xl"
+                  draggable={false}
+                />
+                <div className="absolute inset-0">
+                  {CREATIVITY_STAGES.map((stage, i) => {
+                    const pos = slotPositions[stage.id];
+                    const qPos = quotePositions[stage.id];
+                    const color = stageColors[stage.id] || "bg-primary/40";
+                    return (
+                      <div key={stage.id}>
+                        {/* Stage slot preview */}
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: pos.top,
+                            left: pos.left,
+                            width: pos.width,
+                            clipPath: jigsawClip,
+                          }}
+                          className={`flex h-8 items-center justify-center text-[7px] font-bold text-white/90 sm:h-10 sm:text-[9px] md:h-11 md:text-xs ${color} backdrop-blur-[2px]`}
+                        >
+                          {stage.name}
+                        </div>
+                        {/* Quote slot preview */}
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: qPos.top,
+                            left: qPos.left,
+                            width: qPos.width,
+                            clipPath: jigsawClip,
+                          }}
+                          className={`flex min-h-[1.8rem] items-center justify-center p-1 text-[5px] leading-tight text-white/80 sm:min-h-[2.4rem] sm:text-[7px] md:min-h-[2.8rem] md:text-[9px] ${color} backdrop-blur-[2px]`}
+                        >
+                          {stage.quote.slice(0, 30)}...
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
