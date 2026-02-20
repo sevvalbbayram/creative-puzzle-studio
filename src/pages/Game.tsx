@@ -229,6 +229,7 @@ const Game = () => {
     ? Math.max(0, config.timeLimitSeconds * 1000 - elapsedMs)
     : null;
   const timeUp = timeRemaining !== null && timeRemaining <= 0;
+  const isTimeLow = timeRemaining !== null && timeRemaining > 0 && timeRemaining <= 30000;
 
   // Time up handling
   useEffect(() => {
@@ -253,15 +254,23 @@ const Game = () => {
       {/* Top Bar */}
       <header className="sticky top-0 z-30 flex items-center justify-between border-b bg-card/80 px-3 py-2 backdrop-blur-sm sm:px-4 sm:py-3">
         <div className="flex items-center gap-2 sm:gap-3">
-          <Clock className="h-4 w-4 text-muted-foreground" />
-          <span className="font-display text-base font-semibold tabular-nums sm:text-lg">
+          <Clock className={`h-4 w-4 ${isTimeLow ? "text-destructive animate-pulse" : "text-muted-foreground"}`} />
+          <span className={`font-display text-base font-semibold tabular-nums sm:text-lg ${isTimeLow ? "text-destructive animate-pulse" : ""}`}>
             {timeRemaining !== null ? formatTime(timeRemaining) : formatTime(elapsedMs)}
           </span>
-          {timeRemaining !== null && (
+          {timeRemaining !== null && !isTimeLow && (
             <span className="hidden text-xs text-muted-foreground sm:inline">remaining</span>
+          )}
+          {isTimeLow && (
+            <span className="text-[10px] font-bold text-destructive animate-pulse sm:text-xs">⚠ HURRY!</span>
           )}
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
+          {comboStreak >= 2 && (
+            <span className="flex items-center gap-1 rounded-full bg-accent/20 px-2 py-0.5 text-[10px] font-bold text-accent-foreground sm:px-3 sm:text-xs">
+              🔥 {comboStreak}x
+            </span>
+          )}
           <span className="text-xs text-muted-foreground sm:text-sm">
             {incorrectAttempts} miss{incorrectAttempts !== 1 ? "es" : ""}
           </span>
