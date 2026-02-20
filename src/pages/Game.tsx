@@ -346,7 +346,7 @@ const Game = () => {
       </div>
 
       {/* Main Game Area */}
-      <main className="flex flex-1 flex-col gap-4 p-3 sm:gap-6 sm:p-4 md:flex-row">
+      <main className="flex flex-1 flex-col gap-3 p-2 sm:gap-4 sm:p-3 md:flex-row md:gap-6 md:p-4">
         {/* Puzzle Board */}
         <div className="flex-1">
           <PuzzleBoard

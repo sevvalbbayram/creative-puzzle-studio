@@ -29,17 +29,17 @@ const stageColors: Record<string, { bg: string; border: string }> = {
 
 // 4 slots — each centered on an individual bird body
 const slotPositions: Record<string, { top: string; left: string; width: string }> = {
-  preparation: { top: "28%", left: "8%", width: "14%" },    // Left pair of geese (lower)
-  incubation: { top: "20%", left: "27%", width: "14%" },    // Center-left geese
-  illumination: { top: "16%", left: "44%", width: "14%" },  // Center-right goose
-  verification: { top: "8%", left: "65%", width: "14%" },   // Large goose, far right (highest)
+  preparation: { top: "24%", left: "10%", width: "13%" },    // Left pair of geese
+  incubation: { top: "18%", left: "28%", width: "13%" },     // Center-left geese
+  illumination: { top: "14%", left: "45%", width: "13%" },   // Center-right goose
+  verification: { top: "6%", left: "66%", width: "13%" },    // Large goose, far right
 };
 
 const quotePositions: Record<string, { top: string; left: string; width: string }> = {
-  preparation: { top: "42%", left: "6%", width: "17%" },
-  incubation: { top: "35%", left: "25%", width: "17%" },
-  illumination: { top: "31%", left: "42%", width: "17%" },
-  verification: { top: "23%", left: "63%", width: "17%" },
+  preparation: { top: "38%", left: "8%", width: "16%" },
+  incubation: { top: "32%", left: "26%", width: "16%" },
+  illumination: { top: "28%", left: "43%", width: "16%" },
+  verification: { top: "20%", left: "64%", width: "16%" },
 };
 
 const jigsawClip = "polygon(8% 0%, 36% 0%, 38% 5%, 50% 8%, 62% 5%, 64% 0%, 92% 0%, 100% 8%, 100% 36%, 105% 38%, 108% 50%, 105% 62%, 100% 64%, 100% 92%, 92% 100%, 64% 100%, 62% 95%, 50% 92%, 38% 95%, 36% 100%, 8% 100%, 0% 92%, 0% 64%, -5% 62%, -8% 50%, -5% 38%, 0% 36%, 0% 8%)";
@@ -51,7 +51,7 @@ export function PuzzleBoard({ phase, currentSlots, feedback, onSlotTap, onDrop, 
   };
 
   return (
-    <div className="relative mx-auto aspect-[4/3] w-full max-w-2xl overflow-visible rounded-xl border-2 border-primary/20 shadow-lg">
+    <div className="relative mx-auto aspect-[4/3] w-full max-w-2xl overflow-visible rounded-xl border-2 border-primary/20 shadow-lg touch-manipulation">
       <img
         src={completed ? puzzleCompleteImg : puzzleBgImg}
         alt="Creativity Elephant Puzzle"
