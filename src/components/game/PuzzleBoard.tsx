@@ -27,19 +27,19 @@ const stageColors: Record<string, { bg: string; border: string }> = {
   verification: { bg: "bg-stage-verification", border: "border-stage-verification" },
 };
 
-// 4 slots positioned on each of the 4 birds in the image
+// 4 slots — each positioned on a single bird
 const slotPositions: Record<string, { top: string; left: string; width: string }> = {
-  preparation: { top: "22%", left: "16%", width: "17%" },
-  incubation: { top: "18%", left: "33%", width: "17%" },
-  illumination: { top: "15%", left: "50%", width: "17%" },
-  verification: { top: "12%", left: "68%", width: "17%" },
+  preparation: { top: "26%", left: "10%", width: "13%" },   // White dove, far left
+  incubation: { top: "30%", left: "30%", width: "13%" },    // Small geese cluster, center-left
+  illumination: { top: "22%", left: "50%", width: "13%" },  // Goose, center-right
+  verification: { top: "14%", left: "70%", width: "13%" },  // Large goose, far right
 };
 
 const quotePositions: Record<string, { top: string; left: string; width: string }> = {
-  preparation: { top: "36%", left: "11%", width: "19%" },
-  incubation: { top: "34%", left: "31%", width: "19%" },
-  illumination: { top: "31%", left: "48%", width: "19%" },
-  verification: { top: "28%", left: "66%", width: "19%" },
+  preparation: { top: "42%", left: "8%", width: "16%" },
+  incubation: { top: "46%", left: "28%", width: "16%" },
+  illumination: { top: "38%", left: "48%", width: "16%" },
+  verification: { top: "30%", left: "68%", width: "16%" },
 };
 
 const jigsawClip = "polygon(8% 0%, 36% 0%, 38% 5%, 50% 8%, 62% 5%, 64% 0%, 92% 0%, 100% 8%, 100% 36%, 105% 38%, 108% 50%, 105% 62%, 100% 64%, 100% 92%, 92% 100%, 64% 100%, 62% 95%, 50% 92%, 38% 95%, 36% 100%, 8% 100%, 0% 92%, 0% 64%, -5% 62%, -8% 50%, -5% 38%, 0% 36%, 0% 8%)";
@@ -90,12 +90,12 @@ export function PuzzleBoard({ phase, currentSlots, feedback, onSlotTap, onDrop, 
                     width: pos.width,
                     clipPath: jigsawClip,
                   }}
-                  className={`flex h-10 items-center justify-center text-[7px] font-bold transition-all sm:h-12 sm:text-[10px] md:h-14 md:text-sm ${
+                  className={`flex h-8 items-center justify-center text-[7px] font-medium transition-all sm:h-10 sm:text-[9px] md:h-11 md:text-xs ${
                     stageSlot.filled
-                      ? `${colors.bg} text-white jigsaw-filled`
+                      ? `${colors.bg}/80 text-white/90 jigsaw-filled`
                       : selectedPiece
-                        ? "bg-black/50 text-white/90 animate-pulse jigsaw-empty-active"
-                        : "bg-black/35 text-white/80 hover:bg-black/50 jigsaw-empty"
+                        ? "bg-black/30 text-white/80 animate-pulse jigsaw-empty-active"
+                        : "bg-black/20 text-white/70 hover:bg-black/30 jigsaw-empty"
                   } ${
                     feedback?.slotId === stageSlot.id && feedback.type === "correct"
                       ? "animate-glow-correct"
@@ -140,12 +140,12 @@ export function PuzzleBoard({ phase, currentSlots, feedback, onSlotTap, onDrop, 
                     width: qPos.width,
                     clipPath: jigsawClip,
                   }}
-                  className={`flex min-h-[2.2rem] items-center justify-center p-2 text-[6px] leading-tight transition-all sm:min-h-[3rem] sm:text-[8px] md:min-h-[3.4rem] md:text-xs ${
+                  className={`flex min-h-[1.8rem] items-center justify-center p-1.5 text-[5px] leading-tight transition-all sm:min-h-[2.4rem] sm:text-[7px] md:min-h-[2.8rem] md:text-[10px] ${
                     quoteSlot.filled
-                      ? `${colors.bg} text-white jigsaw-filled`
+                      ? `${colors.bg}/80 text-white/90 jigsaw-filled`
                       : selectedPiece
-                        ? "bg-black/40 text-white/80 animate-pulse jigsaw-empty-active"
-                        : "bg-black/25 text-white/70 hover:bg-black/40 jigsaw-empty"
+                        ? "bg-black/25 text-white/70 animate-pulse jigsaw-empty-active"
+                        : "bg-black/15 text-white/60 hover:bg-black/25 jigsaw-empty"
                   } ${
                     feedback?.slotId === quoteSlot.id && feedback.type === "correct"
                       ? "animate-glow-correct"
