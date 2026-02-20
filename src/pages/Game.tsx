@@ -51,6 +51,8 @@ const Game = () => {
   const [completed, setCompleted] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
   const [phaseTransition, setPhaseTransition] = useState(false);
+  const [showHalfwayToast, setShowHalfwayToast] = useState(false);
+  const halfwayTriggered = useRef(false);
   const startTimeRef = useRef<number>(Date.now());
   const timerRef = useRef<ReturnType<typeof setInterval>>();
 
@@ -142,6 +144,21 @@ const Game = () => {
       }
     }
   }, [phase, slots, completed, difficulty, elapsedMs, incorrectAttempts, updateScore]);
+
+  // 50% milestone celebration
+  useEffect(() => {
+    if (halfwayTriggered.current) return;
+    const placed = phase === 1
+      ? pieces.filter((p) => p.placed).length
+      : 5 + pieces.filter((p) => p.placed).length;
+    if (placed >= 5) {
+      halfwayTriggered.current = true;
+      setShowHalfwayToast(true);
+      confetti({ particleCount: 60, spread: 55, origin: { y: 0.6 } });
+      playCorrectSound();
+      setTimeout(() => setShowHalfwayToast(false), 2200);
+    }
+  }, [phase, pieces]);
 
   const handleSlotTap = useCallback(
     (slotId: string, slotStageId: string, slotType: "stage" | "quote") => {
@@ -302,6 +319,23 @@ const Game = () => {
           onDragEnd={handleDragEnd}
         />
       </main>
+
+      {/* Halfway Celebration Toast */}
+      <AnimatePresence>
+        {showHalfwayToast && (
+          <motion.div
+            initial={{ opacity: 0, y: -40, scale: 0.8 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.9 }}
+            transition={{ type: "spring", damping: 18 }}
+            className="fixed left-1/2 top-16 z-50 -translate-x-1/2 rounded-2xl bg-card px-6 py-4 shadow-2xl border border-primary/30 text-center"
+          >
+            <span className="text-3xl">🎯</span>
+            <p className="mt-1 font-display text-lg font-bold text-foreground">Halfway there!</p>
+            <p className="text-sm text-muted-foreground">Keep going, you're doing great!</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Phase Transition Overlay */}
       <AnimatePresence>
