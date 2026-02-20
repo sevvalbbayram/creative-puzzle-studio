@@ -1,5 +1,6 @@
 import { CREATIVITY_STAGES } from "@/lib/gameData";
-import elephantImg from "@/assets/elephant-puzzle.png";
+import puzzleBgImg from "@/assets/puzzle-background.png";
+import puzzleCompleteImg from "@/assets/puzzle-completed.png";
 import { SparkleEffect } from "./SparkleEffect";
 
 interface SlotState {
@@ -16,6 +17,7 @@ interface PuzzleBoardProps {
   onSlotTap: (slotId: string, stageId: string, slotType: "stage" | "quote") => void;
   onDrop: (slotId: string, stageId: string, slotType: "stage" | "quote") => void;
   selectedPiece: string | null;
+  completed?: boolean;
 }
 
 const stageColors: Record<string, { bg: string; border: string }> = {
@@ -55,7 +57,7 @@ const quotePositions: Record<string, { top: string; left: string; width: string 
 // Jigsaw tab clip path
 const jigsawClip = "polygon(8% 0%, 36% 0%, 38% 5%, 50% 8%, 62% 5%, 64% 0%, 92% 0%, 100% 8%, 100% 36%, 105% 38%, 108% 50%, 105% 62%, 100% 64%, 100% 92%, 92% 100%, 64% 100%, 62% 95%, 50% 92%, 38% 95%, 36% 100%, 8% 100%, 0% 92%, 0% 64%, -5% 62%, -8% 50%, -5% 38%, 0% 36%, 0% 8%)";
 
-export function PuzzleBoard({ phase, currentSlots, feedback, onSlotTap, onDrop, selectedPiece }: PuzzleBoardProps) {
+export function PuzzleBoard({ phase, currentSlots, feedback, onSlotTap, onDrop, selectedPiece, completed }: PuzzleBoardProps) {
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
@@ -64,9 +66,9 @@ export function PuzzleBoard({ phase, currentSlots, feedback, onSlotTap, onDrop, 
   return (
     <div className="relative mx-auto aspect-[4/3] w-full max-w-2xl overflow-visible rounded-xl border-2 border-primary/20 shadow-lg">
       <img
-        src={elephantImg}
+        src={completed ? puzzleCompleteImg : puzzleBgImg}
         alt="Creativity Elephant Puzzle"
-        className="h-full w-full object-cover rounded-xl"
+        className="h-full w-full object-cover rounded-xl transition-all duration-700"
         draggable={false}
       />
 
