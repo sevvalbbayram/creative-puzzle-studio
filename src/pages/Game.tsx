@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useCallback, useRef } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { Clock, Crown, HelpCircle, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,7 @@ const Game = () => {
   const [showHalfwayToast, setShowHalfwayToast] = useState(false);
   const [comboStreak, setComboStreak] = useState(0);
   const [showCombo, setShowCombo] = useState(false);
+  const [broadcastToast, setBroadcastToast] = useState<string | null>(null);
   const halfwayTriggered = useRef(false);
   const startTimeRef = useRef<number>(Date.now());
   const timerRef = useRef<ReturnType<typeof setInterval>>();
@@ -97,7 +99,24 @@ const Game = () => {
     }
   }, [session?.status, session?.id, navigate]);
 
-  // Move to phase 2 when all stages placed
+  // Listen for teacher broadcast messages
+  useEffect(() => {
+    if (!sessionId) return;
+    const channel = supabase
+      .channel(`broadcasts-${sessionId}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "broadcast_messages", filter: `session_id=eq.${sessionId}` },
+        (payload) => {
+          const msg = (payload.new as { message: string }).message;
+          setBroadcastToast(msg);
+          setTimeout(() => setBroadcastToast(null), 5000);
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [sessionId]);
+
   useEffect(() => {
     if (phase === 1 && !phaseTransition) {
       const allStagesPlaced = slots.every((s) => s.type === "stage" && s.filled);
@@ -347,6 +366,23 @@ const Game = () => {
           onDragEnd={handleDragEnd}
         />
       </main>
+
+      {/* Teacher Broadcast Toast */}
+      <AnimatePresence>
+        {broadcastToast && (
+          <motion.div
+            initial={{ opacity: 0, y: -50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -30, scale: 0.9 }}
+            transition={{ type: "spring", damping: 18 }}
+            className="fixed left-1/2 top-16 z-[60] -translate-x-1/2 w-[90vw] max-w-md rounded-2xl border border-primary/30 bg-card px-6 py-4 shadow-2xl text-center"
+          >
+            <span className="text-2xl">📢</span>
+            <p className="mt-1 font-display text-base font-bold text-foreground">Teacher says:</p>
+            <p className="mt-1 text-sm text-muted-foreground">{broadcastToast}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Combo Streak Toast */}
       <AnimatePresence>

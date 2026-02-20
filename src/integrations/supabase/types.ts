@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      broadcast_messages: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          sender_id: string
+          session_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          sender_id: string
+          session_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          sender_id?: string
+          session_id?: string
+        }
+        Relationships: []
+      }
       game_players: {
         Row: {
           completed: boolean
