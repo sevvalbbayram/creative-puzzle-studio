@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useAnonymousAuth } from "@/hooks/useAnonymousAuth";
 import { useGameSession } from "@/hooks/useGameSession";
-import { CREATIVITY_STAGES, DIFFICULTY_CONFIG, calculateScore } from "@/lib/gameData";
+import { CREATIVITY_STAGES, getRandomizedStages, DIFFICULTY_CONFIG, calculateScore } from "@/lib/gameData";
 import { playCorrectSound, playIncorrectSound, playCelebrationSound } from "@/lib/audioFeedback";
 import { PuzzleBoard } from "@/components/game/PuzzleBoard";
 import { PiecesTray } from "@/components/game/PiecesTray";
@@ -63,9 +63,12 @@ const Game = () => {
   const difficulty = session?.difficulty ?? "medium";
   const config = DIFFICULTY_CONFIG[difficulty] || DIFFICULTY_CONFIG.medium;
 
+  // Randomize quotes once per game session
+  const [stages] = useState(() => getRandomizedStages());
+
   // Initialize pieces
   useEffect(() => {
-    const stagePieces: PieceState[] = CREATIVITY_STAGES.map((s) => ({
+    const stagePieces: PieceState[] = stages.map((s) => ({
       id: `stage-${s.id}`,
       type: "stage" as const,
       stageId: s.id,
@@ -74,14 +77,14 @@ const Game = () => {
     }));
     setPieces(shuffleArray(stagePieces));
 
-    const stageSlots = CREATIVITY_STAGES.map((s) => ({
+    const stageSlots = stages.map((s) => ({
       id: `slot-stage-${s.id}`,
       stageId: s.id,
       filled: false,
       type: "stage" as const,
     }));
     setSlots(stageSlots);
-  }, []);
+  }, [stages]);
 
   // Timer
   useEffect(() => {
@@ -127,15 +130,15 @@ const Game = () => {
         confetti({ particleCount: 80, spread: 70, origin: { y: 0.5 } });
 
         setTimeout(() => {
-          const quotePieces: PieceState[] = CREATIVITY_STAGES.map((s) => ({
-            id: `quote-${s.id}`,
-            type: "quote" as const,
-            stageId: s.id,
-            label: s.quote,
-            placed: false,
-          }));
-          setPieces(shuffleArray(quotePieces));
-          const quoteSlots = CREATIVITY_STAGES.map((s) => ({
+        const quotePieces: PieceState[] = stages.map((s) => ({
+          id: `quote-${s.id}`,
+          type: "quote" as const,
+          stageId: s.id,
+          label: s.quote,
+          placed: false,
+        }));
+        setPieces(shuffleArray(quotePieces));
+        const quoteSlots = stages.map((s) => ({
             id: `slot-quote-${s.id}`,
             stageId: s.id,
             filled: false,
@@ -171,8 +174,8 @@ const Game = () => {
     if (halfwayTriggered.current) return;
     const placed = phase === 1
       ? pieces.filter((p) => p.placed).length
-      : 5 + pieces.filter((p) => p.placed).length;
-    if (placed >= 5) {
+      : 4 + pieces.filter((p) => p.placed).length;
+    if (placed >= 4) {
       halfwayTriggered.current = true;
       setShowHalfwayToast(true);
       confetti({ particleCount: 60, spread: 55, origin: { y: 0.6 } });
@@ -233,10 +236,10 @@ const Game = () => {
     [handleSlotTap]
   );
 
-  const totalPieces = 10;
+  const totalPieces = 8;
   const actualPlaced = phase === 1
     ? pieces.filter((p) => p.placed).length
-    : 5 + pieces.filter((p) => p.placed).length;
+    : 4 + pieces.filter((p) => p.placed).length;
 
   const formatTime = (ms: number) => {
     const s = Math.floor(ms / 1000);

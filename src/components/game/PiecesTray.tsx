@@ -22,8 +22,7 @@ const stageColorMap: Record<string, string> = {
   preparation: "border-stage-preparation bg-stage-preparation/10 hover:bg-stage-preparation/20",
   incubation: "border-stage-incubation bg-stage-incubation/10 hover:bg-stage-incubation/20",
   illumination: "border-stage-illumination bg-stage-illumination/10 hover:bg-stage-illumination/20",
-  evaluation: "border-stage-evaluation bg-stage-evaluation/10 hover:bg-stage-evaluation/20",
-  elaboration: "border-stage-elaboration bg-stage-elaboration/10 hover:bg-stage-elaboration/20",
+  verification: "border-stage-verification bg-stage-verification/10 hover:bg-stage-verification/20",
 };
 
 // Jigsaw clip path for tray pieces
