@@ -46,7 +46,13 @@ const Index = () => {
     setError(null);
     const sess = await joinSession(gameCode.trim(), nickname.trim());
     setSubmitting(false);
-    if (sess) navigate(`/lobby/${sess.id}`);
+    if (!sess) return;
+    // Late joiners (game already started) go directly to the game page
+    if (sess.status === "playing") {
+      navigate(`/game/${sess.id}`);
+    } else {
+      navigate(`/lobby/${sess.id}`);
+    }
   };
 
   if (authLoading) {

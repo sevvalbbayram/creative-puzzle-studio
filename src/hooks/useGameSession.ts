@@ -105,21 +105,22 @@ export function useGameSession(sessionId: string | null, userId: string | null) 
     [userId]
   );
 
-  // Join existing session by code
+  // Join existing session by code — works for both lobby and in-progress games
   const joinSession = useCallback(
     async (code: string, nickname: string) => {
       if (!userId) return null;
       setError(null);
 
+      // Accept lobby AND playing sessions so late-joiners can still enter
       const { data: sess, error: sessErr } = await supabase
         .from("game_sessions")
         .select("*")
         .eq("code", code.toUpperCase())
-        .eq("status", "lobby")
+        .in("status", ["lobby", "playing"])
         .single();
 
       if (sessErr || !sess) {
-        setError("Game not found or already started.");
+        setError("Game not found. Check your code and try again.");
         return null;
       }
 
@@ -131,7 +132,7 @@ export function useGameSession(sessionId: string | null, userId: string | null) 
 
       if (playerErr) {
         if (playerErr.message.includes("duplicate") || playerErr.code === "23505") {
-          // Already in this game — redirect to lobby instead of showing an error
+          // Player is already registered — just send them to the right page
           return sess;
         }
         setError(playerErr.message);
