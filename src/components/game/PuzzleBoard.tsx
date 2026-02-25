@@ -31,14 +31,15 @@ const stageColors: Record<string, { bg: string; border: string; text: string }> 
 
 // Single source of truth for all difficulties: stage + quote positions stay aligned and identical
 // across easy/medium/hard/very_hard. Stages 1–4 sit on the birds (arc left→right); Elaboration on elephant.
+// Pillars are placed on the bird bodies for better aesthetics; quotes sit just below each pillar.
 const SLOT_LAYOUT: Record<
   string,
   { stage: { top: string; left: string; width: string }; quote: { top: string; left: string; width: string } }
 > = {
-  preparation:  { stage: { top: "15%", left: "16%", width: "16%" }, quote: { top: "26%", left: "14%", width: "22%" } },  // bird 1
-  incubation:   { stage: { top: "10%", left: "32%", width: "16%" }, quote: { top: "22%", left: "30%", width: "22%" } },  // bird 2
-  illumination: { stage: { top: "8%",  left: "48%", width: "16%" }, quote: { top: "20%", left: "46%", width: "22%" } },  // bird 3
-  evaluation:   { stage: { top: "12%", left: "64%", width: "16%" }, quote: { top: "24%", left: "62%", width: "22%" } },  // bird 4
+  preparation:  { stage: { top: "20%", left: "15%", width: "16%" }, quote: { top: "31%", left: "13%", width: "22%" } },  // on bird 1
+  incubation:   { stage: { top: "18%", left: "31%", width: "16%" }, quote: { top: "29%", left: "29%", width: "22%" } },  // on bird 2
+  illumination: { stage: { top: "17%", left: "47%", width: "16%" }, quote: { top: "28%", left: "45%", width: "22%" } },  // on bird 3
+  evaluation:   { stage: { top: "19%", left: "63%", width: "16%" }, quote: { top: "30%", left: "61%", width: "22%" } },  // on bird 4
   elaboration:  { stage: { top: "44%", left: "40%", width: "16%" }, quote: { top: "56%", left: "36%", width: "24%" } },   // elephant body
 };
 
