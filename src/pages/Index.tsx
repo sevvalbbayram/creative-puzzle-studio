@@ -1,21 +1,25 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Puzzle, Users, Trophy, Sparkles, ArrowRight, BookOpen } from "lucide-react";
+import {
+  Puzzle, Users, Trophy, ArrowRight, BookOpen,
+  LogIn, Sparkles, LogOut, PlusCircle,
+} from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useAnonymousAuth } from "@/hooks/useAnonymousAuth";
+import { useTeacherAuth } from "@/hooks/useTeacherAuth";
 import { useGameSession } from "@/hooks/useGameSession";
 import elephantImg from "@/assets/elephant-puzzle.png";
 
 const STAGES = [
-  { name: "Preparation", color: "bg-stage-preparation", emoji: "🔵" },
-  { name: "Incubation",  color: "bg-stage-incubation",  emoji: "🟣" },
-  { name: "Illumination",color: "bg-stage-illumination",emoji: "🟡" },
-  { name: "Evaluation",  color: "bg-stage-evaluation",  emoji: "🔴" },
-  { name: "Elaboration", color: "bg-stage-elaboration",  emoji: "🟢" },
+  { name: "Preparation",  color: "bg-stage-preparation",  emoji: "🔵" },
+  { name: "Incubation",   color: "bg-stage-incubation",   emoji: "🟣" },
+  { name: "Illumination", color: "bg-stage-illumination", emoji: "🟡" },
+  { name: "Evaluation",   color: "bg-stage-evaluation",   emoji: "🔴" },
+  { name: "Elaboration",  color: "bg-stage-elaboration",  emoji: "🟢" },
 ];
 
 const Index = () => {
@@ -23,19 +27,23 @@ const Index = () => {
   const [searchParams] = useSearchParams();
   const joinCode = searchParams.get("code");
 
+  // Teacher auth (real Supabase email/password session)
+  const { user: teacherUser, displayName: teacherName, signOut: teacherSignOut } = useTeacherAuth();
+
+  // Anonymous auth (used for both teachers creating games and students joining)
   const { userId, loading: authLoading } = useAnonymousAuth();
   const { createSession, joinSession, error, setError } = useGameSession(null, userId);
 
-  const [nickname, setNickname] = useState("");
+  const [nickname, setNickname] = useState(() => teacherName ?? "");
   const [gameCode, setGameCode] = useState(joinCode || "");
   const [mode, setMode] = useState<"home" | "create" | "join">(joinCode ? "join" : "home");
   const [submitting, setSubmitting] = useState(false);
 
   const handleCreate = async () => {
-    if (!nickname.trim()) return;
+    const name = nickname.trim() || teacherName || "Teacher";
     setSubmitting(true);
     setError(null);
-    const sess = await createSession(nickname.trim());
+    const sess = await createSession(name);
     setSubmitting(false);
     if (sess) navigate(`/lobby/${sess.id}`);
   };
@@ -47,12 +55,16 @@ const Index = () => {
     const sess = await joinSession(gameCode.trim(), nickname.trim());
     setSubmitting(false);
     if (!sess) return;
-    // Late joiners (game already started) go directly to the game page
     if (sess.status === "playing") {
       navigate(`/game/${sess.id}`);
     } else {
       navigate(`/lobby/${sess.id}`);
     }
+  };
+
+  const handleTeacherSignOut = async () => {
+    await teacherSignOut();
+    setMode("home");
   };
 
   if (authLoading) {
@@ -75,18 +87,17 @@ const Index = () => {
         <ThemeToggle />
       </div>
 
-      {/* Elephant background — visible but not overpowering */}
+      {/* Elephant background */}
       <div className="pointer-events-none absolute inset-0">
         <img
           src={elephantImg}
           alt=""
           className="h-full w-full object-cover opacity-[0.13] dark:opacity-[0.08]"
         />
-        {/* Gradient vignette so the center card stays readable */}
         <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/30 to-background/70" />
       </div>
 
-      {/* Floating stage badges behind the card */}
+      {/* Floating stage badges */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
         {STAGES.map((s, i) => (
           <motion.div
@@ -130,8 +141,6 @@ const Index = () => {
           <p className="mt-2 text-base text-muted-foreground">
             A jigsaw puzzle game about the creative process
           </p>
-
-          {/* Stage preview pills */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -149,9 +158,55 @@ const Index = () => {
           </motion.div>
         </div>
 
-        {/* Mode panels */}
+        {/* ── TEACHER LOGGED IN: show teacher home ── */}
+        {teacherUser && mode === "home" && (
+          <motion.div
+            key="teacher-home"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-full space-y-3"
+          >
+            {/* Teacher greeting */}
+            <div className="flex items-center justify-between rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3">
+              <div>
+                <p className="text-xs text-muted-foreground">Signed in as teacher</p>
+                <p className="font-display font-bold text-foreground">{teacherName}</p>
+                <p className="text-[11px] text-muted-foreground">{teacherUser.email}</p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1.5 text-muted-foreground hover:text-destructive"
+                onClick={handleTeacherSignOut}
+              >
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </Button>
+            </div>
+
+            <Button
+              size="lg"
+              className="w-full gap-2 text-base shadow-lg shadow-primary/20"
+              onClick={() => setMode("create")}
+            >
+              <PlusCircle className="h-5 w-5" />
+              Create New Game
+            </Button>
+            <Button
+              size="lg"
+              variant="ghost"
+              className="w-full gap-2 text-base"
+              onClick={() => navigate("/leaderboard")}
+            >
+              <Trophy className="h-5 w-5" />
+              Leaderboard
+            </Button>
+          </motion.div>
+        )}
+
+        {/* ── NO TEACHER SESSION: home choice ── */}
         <AnimatePresence mode="wait">
-          {mode === "home" && (
+          {!teacherUser && mode === "home" && (
             <motion.div
               key="home"
               initial={{ opacity: 0, y: 12 }}
@@ -160,25 +215,36 @@ const Index = () => {
               transition={{ duration: 0.22 }}
               className="flex w-full flex-col gap-3"
             >
+              {/* Student join — primary action */}
               <Button
                 size="lg"
                 className="w-full gap-2 text-base shadow-lg shadow-primary/20"
-                onClick={() => setMode("create")}
+                onClick={() => setMode("join")}
               >
-                <Sparkles className="h-5 w-5" />
-                Create Game
-                <span className="ml-auto text-xs opacity-70 font-normal">Teacher</span>
+                <Users className="h-5 w-5" />
+                Join a Game
+                <span className="ml-auto text-xs font-normal opacity-70">Student</span>
               </Button>
+
+              {/* Divider */}
+              <div className="flex items-center gap-3">
+                <div className="flex-1 border-t" />
+                <span className="text-xs text-muted-foreground">or</span>
+                <div className="flex-1 border-t" />
+              </div>
+
+              {/* Teacher login */}
               <Button
                 size="lg"
                 variant="outline"
                 className="w-full gap-2 text-base"
-                onClick={() => setMode("join")}
+                onClick={() => navigate("/teacher/login")}
               >
-                <Users className="h-5 w-5" />
-                Join Game
-                <span className="ml-auto text-xs opacity-70 font-normal">Student</span>
+                <LogIn className="h-5 w-5" />
+                Teacher Login
+                <span className="ml-auto text-xs font-normal opacity-70">Teacher</span>
               </Button>
+
               <Button
                 size="lg"
                 variant="ghost"
@@ -191,6 +257,7 @@ const Index = () => {
             </motion.div>
           )}
 
+          {/* ── CREATE GAME panel (teacher only) ── */}
           {mode === "create" && (
             <motion.div
               key="create"
@@ -207,17 +274,17 @@ const Index = () => {
                     Create a New Game
                   </CardTitle>
                   <CardDescription>
-                    You'll be the Game Master with full control over the session.
+                    You'll be the Game Master for this session.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
                     <label htmlFor="nickname" className="mb-1.5 block text-sm font-medium">
-                      Your Name / Nickname
+                      Display Name
                     </label>
                     <Input
                       id="nickname"
-                      placeholder="e.g. Ms. Rivera"
+                      placeholder={teacherName ?? "e.g. Ms. Rivera"}
                       value={nickname}
                       onChange={(e) => setNickname(e.target.value)}
                       maxLength={20}
@@ -231,12 +298,15 @@ const Index = () => {
                     </p>
                   )}
                   <div className="flex gap-2 pt-1">
-                    <Button variant="ghost" onClick={() => { setMode("home"); setError(null); }}>
+                    <Button
+                      variant="ghost"
+                      onClick={() => { setMode("home"); setError(null); }}
+                    >
                       Back
                     </Button>
                     <Button
                       className="flex-1 gap-2"
-                      disabled={!nickname.trim() || submitting}
+                      disabled={(!nickname.trim() && !teacherName) || submitting}
                       onClick={handleCreate}
                     >
                       {submitting ? "Creating…" : "Create Game"}
@@ -248,6 +318,7 @@ const Index = () => {
             </motion.div>
           )}
 
+          {/* ── JOIN GAME panel (students) ── */}
           {mode === "join" && (
             <motion.div
               key="join"
@@ -301,7 +372,10 @@ const Index = () => {
                     </p>
                   )}
                   <div className="flex gap-2 pt-1">
-                    <Button variant="ghost" onClick={() => { setMode("home"); setError(null); }}>
+                    <Button
+                      variant="ghost"
+                      onClick={() => { setMode("home"); setError(null); }}
+                    >
                       Back
                     </Button>
                     <Button
@@ -327,10 +401,10 @@ const Index = () => {
           className="grid w-full grid-cols-4 gap-3 text-center text-xs text-muted-foreground"
         >
           {[
-            { icon: <Puzzle className="h-5 w-5 text-primary mx-auto" />,   label: "Drag & Drop" },
-            { icon: <Users   className="h-5 w-5 text-secondary mx-auto" />, label: "Multiplayer" },
-            { icon: <Trophy  className="h-5 w-5 text-accent mx-auto" />,   label: "Leaderboard" },
-            { icon: <BookOpen className="h-5 w-5 text-stage-elaboration mx-auto" />, label: "5 Stages" },
+            { icon: <Puzzle   className="h-5 w-5 text-primary mx-auto" />,              label: "Drag & Drop" },
+            { icon: <Users    className="h-5 w-5 text-secondary mx-auto" />,            label: "Multiplayer" },
+            { icon: <Trophy   className="h-5 w-5 text-accent mx-auto" />,              label: "Leaderboard" },
+            { icon: <BookOpen className="h-5 w-5 text-stage-elaboration mx-auto" />,   label: "5 Stages" },
           ].map((f) => (
             <div key={f.label} className="flex flex-col items-center gap-1">
               {f.icon}

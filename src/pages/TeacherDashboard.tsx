@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import {
   Trophy, Clock, Target, CheckCircle2, Loader2, Users,
   StopCircle, ArrowLeft, Puzzle, BarChart3, Download, Send,
-  Pause, Play, UserPlus,
+  Pause, Play, UserPlus, LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +12,7 @@ import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { useAnonymousAuth } from "@/hooks/useAnonymousAuth";
 import { useGameSession } from "@/hooks/useGameSession";
+import { useTeacherAuth } from "@/hooks/useTeacherAuth";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -20,9 +21,15 @@ const TeacherDashboard = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
   const { userId } = useAnonymousAuth();
+  const { displayName: teacherName, signOut: teacherSignOut } = useTeacherAuth();
   const { session, players, currentPlayer, endGame, togglePause } = useGameSession(sessionId ?? null, userId);
   const [broadcastMsg, setBroadcastMsg] = useState("");
   const [sending, setSending] = useState(false);
+
+  const handleSignOut = async () => {
+    await teacherSignOut();
+    navigate("/");
+  };
 
   const isGameMaster = currentPlayer?.is_game_master ?? false;
   const isPaused = !!session?.paused_at;
@@ -147,6 +154,18 @@ const TeacherDashboard = () => {
             </span>
           )}
           <ThemeToggle />
+          {teacherName && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1.5 text-muted-foreground hover:text-destructive hidden sm:flex"
+              onClick={handleSignOut}
+              title={`Sign out (${teacherName})`}
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              <span className="text-xs">{teacherName}</span>
+            </Button>
+          )}
         </div>
       </header>
 

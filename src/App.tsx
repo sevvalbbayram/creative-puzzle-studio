@@ -9,6 +9,7 @@ import Game from "./pages/Game";
 import Results from "./pages/Results";
 import Leaderboard from "./pages/Leaderboard";
 import TeacherDashboard from "./pages/TeacherDashboard";
+import TeacherLogin from "./pages/TeacherLogin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,6 +22,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/teacher/login" element={<TeacherLogin />} />
           <Route path="/lobby/:sessionId" element={<Lobby />} />
           <Route path="/game/:sessionId" element={<Game />} />
           <Route path="/results/:sessionId" element={<Results />} />
