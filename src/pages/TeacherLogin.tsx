@@ -23,11 +23,19 @@ export default function TeacherLogin() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [demoCooldown, setDemoCooldown] = useState(0); // seconds until demo button can be used again
 
   // If the teacher is already logged in, send them straight to the landing page
   useEffect(() => {
     if (!loading && user) navigate("/", { replace: true });
   }, [user, loading, navigate]);
+
+  // Cooldown timer for demo button (avoids rate limits after failed create)
+  useEffect(() => {
+    if (demoCooldown <= 0) return;
+    const t = setInterval(() => setDemoCooldown((c) => (c <= 1 ? 0 : c - 1)), 1000);
+    return () => clearInterval(t);
+  }, [demoCooldown]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,21 +67,38 @@ export default function TeacherLogin() {
     }
   };
 
-  // Demo account: sign in only (no auto sign-up — avoids rate limits and keeps demo as a test account)
+  // Demo account: sign in first; if user doesn't exist, try creating once (then sign in). Cooldown on create failure to avoid rate limits.
   const handleUseDemo = async () => {
+    if (demoCooldown > 0) return;
     setEmail(DEMO_EMAIL);
     setPassword(DEMO_PASSWORD);
     setError(null);
     setSuccess(null);
     setSubmitting(true);
 
-    const result = await signIn(DEMO_EMAIL, DEMO_PASSWORD);
-    setSubmitting(false);
+    let result = await signIn(DEMO_EMAIL, DEMO_PASSWORD);
+    if (!result.error) {
+      setSubmitting(false);
+      return;
+    }
 
+    // Sign-in failed — try creating the demo user once (first-time setup)
+    const signupResult = await signUp(DEMO_EMAIL, DEMO_PASSWORD, "Demo Teacher");
+    if (signupResult.error) {
+      setSubmitting(false);
+      setDemoCooldown(45);
+      if (signupResult.error.includes("seconds") || signupResult.error.includes("rate")) {
+        setError("Too many attempts. Please wait about a minute, then try again or create your own account below.");
+      } else {
+        setError("Could not create demo account. Create your own teacher account below.");
+      }
+      return;
+    }
+
+    result = await signIn(DEMO_EMAIL, DEMO_PASSWORD);
+    setSubmitting(false);
     if (result.error) {
-      setError(
-        "Demo sign-in failed. If the demo user isn't set up yet, create your own teacher account below."
-      );
+      setSuccess("Demo account was created. If your project requires email confirmation, turn it off in Supabase Auth settings, or sign in with the demo email/password above.");
     }
   };
 
@@ -133,13 +158,17 @@ export default function TeacherLogin() {
             type="button"
             size="sm"
             className="w-full gap-2 bg-secondary text-secondary-foreground hover:bg-secondary/80"
-            disabled={submitting}
+            disabled={submitting || demoCooldown > 0}
             onClick={handleUseDemo}
           >
-            {submitting ? "Signing in…" : "Use Demo Account →"}
+            {submitting
+              ? "Signing in…"
+              : demoCooldown > 0
+                ? `Try again in ${demoCooldown}s`
+                : "Use Demo Account →"}
           </Button>
           <p className="mt-2 text-center text-[11px] text-muted-foreground">
-            Direct sign-in for testing. Other teachers can create their own account below.
+            One-click test login. If the demo user doesn’t exist yet, it will be created on first use. Other teachers can create their own account below.
           </p>
         </div>
 
