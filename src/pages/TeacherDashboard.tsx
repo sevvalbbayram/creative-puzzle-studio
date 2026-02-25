@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import {
   Trophy, Clock, Target, CheckCircle2, Loader2, Users,
   StopCircle, ArrowLeft, Puzzle, BarChart3, Download, Send,
-  Pause, Play, UserPlus, LogOut,
+  Pause, Play, UserPlus, LogOut, Copy, Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,6 +25,26 @@ const TeacherDashboard = () => {
   const { session, players, currentPlayer, endGame, togglePause } = useGameSession(sessionId ?? null, userId);
   const [broadcastMsg, setBroadcastMsg] = useState("");
   const [sending, setSending] = useState(false);
+  const [joinLinkCopied, setJoinLinkCopied] = useState(false);
+
+  const joinLink = typeof window !== "undefined"
+    ? `${window.location.origin}/?code=${session?.code ?? ""}`
+    : "";
+
+  const copyJoinLink = () => {
+    if (!joinLink) return;
+    navigator.clipboard.writeText(joinLink).catch(() => {
+      const el = document.createElement("textarea");
+      el.value = joinLink;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+    });
+    setJoinLinkCopied(true);
+    toast.success("Join link copied!");
+    setTimeout(() => setJoinLinkCopied(false), 2500);
+  };
 
   const handleSignOut = async () => {
     await teacherSignOut();
@@ -194,6 +214,39 @@ const TeacherDashboard = () => {
               value={bestTime === Infinity ? "—" : formatTime(bestTime)}
             />
           </div>
+
+          {/* Try the game yourself — join as student in incognito */}
+          <Card className="border-primary/20 bg-primary/5">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Puzzle className="h-4 w-4 text-primary" /> Try the game yourself
+              </CardTitle>
+              <CardDescription className="text-sm">
+                As the teacher, this page stays on the dashboard. To play the puzzle like a student, open the link below in an <strong>incognito or private window</strong> (or another browser), then join with a nickname.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <Input
+                  readOnly
+                  value={joinLink}
+                  className="font-mono text-xs bg-muted/50"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 shrink-0"
+                  onClick={copyJoinLink}
+                >
+                  {joinLinkCopied ? <Check className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4" />}
+                  {joinLinkCopied ? "Copied!" : "Copy join link"}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Or share this link / code <strong>{session?.code}</strong> with students — they go to the site, enter the code, and join.
+              </p>
+            </CardContent>
+          </Card>
 
           {/* Game Controls */}
           {isGameMaster && (
