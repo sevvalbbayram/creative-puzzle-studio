@@ -1,11 +1,11 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Copy, Check, Users, Crown, Settings, Play, X, Puzzle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -27,7 +27,6 @@ const Lobby = () => {
   const [copied, setCopied] = useState(false);
   const isGameMaster = currentPlayer?.is_game_master ?? false;
 
-  // Redirect to game when status changes to playing
   useEffect(() => {
     if (session?.status === "playing") {
       navigate(`/game/${session.id}`);
@@ -39,10 +38,18 @@ const Lobby = () => {
 
   const copyLink = () => {
     const url = `${window.location.origin}/?code=${session?.code}`;
-    navigator.clipboard.writeText(url);
+    navigator.clipboard.writeText(url).catch(() => {
+      // Fallback for environments without clipboard API
+      const el = document.createElement("textarea");
+      el.value = url;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+    });
     setCopied(true);
-    toast.success("Link copied!");
-    setTimeout(() => setCopied(false), 2000);
+    toast.success("Invite link copied!");
+    setTimeout(() => setCopied(false), 2500);
   };
 
   if (authLoading || loading) {
@@ -57,8 +64,8 @@ const Lobby = () => {
 
   if (!session) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background">
-        <p className="text-muted-foreground">Game not found.</p>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background px-4">
+        <p className="text-muted-foreground">Game session not found.</p>
         <Button onClick={() => navigate("/")}>Go Home</Button>
       </div>
     );
@@ -67,23 +74,58 @@ const Lobby = () => {
   return (
     <div className="flex min-h-screen flex-col items-center bg-background px-4 py-8">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-lg space-y-6"
+        transition={{ duration: 0.45 }}
+        className="w-full max-w-lg space-y-5"
       >
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-3xl font-bold">Game Lobby</h1>
-          <div className="mt-2 flex items-center justify-center gap-2">
-            <span className="font-display text-2xl tracking-[0.3em] text-primary">
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary shadow-lg shadow-primary/25">
+            <Puzzle className="h-7 w-7 text-primary-foreground" />
+          </div>
+          <h1 className="font-display text-3xl font-bold text-foreground">Game Lobby</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {isGameMaster ? "Share the code below with your students" : "Waiting for the game to start…"}
+          </p>
+
+          {/* Game code display */}
+          <div className="mt-3 inline-flex items-center gap-2 rounded-2xl border-2 border-primary/20 bg-card px-5 py-2.5 shadow-sm">
+            <span className="font-display text-3xl font-bold tracking-[0.35em] text-primary">
               {session.code}
             </span>
-            <Button size="icon" variant="ghost" onClick={copyLink} className="h-8 w-8">
-              {copied ? <Check className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4" />}
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={copyLink}
+              className="h-8 w-8 shrink-0"
+              title="Copy invite link"
+            >
+              <AnimatePresence mode="wait">
+                {copied ? (
+                  <motion.span
+                    key="check"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0 }}
+                  >
+                    <Check className="h-4 w-4 text-success" />
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key="copy"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0 }}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </Button>
           </div>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Share this code or link to invite players
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            Students go to the site and enter this code
           </p>
         </div>
 
@@ -92,12 +134,15 @@ const Lobby = () => {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-base">
-                <Settings className="h-4 w-4" /> Game Settings
+                <Settings className="h-4 w-4 text-primary" /> Game Settings
               </CardTitle>
+              <CardDescription className="text-xs">
+                Choose difficulty before starting the game.
+              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent>
               <div>
-                <label className="mb-1 block text-sm font-medium">Difficulty</label>
+                <label className="mb-1.5 block text-sm font-medium">Difficulty Level</label>
                 <Select
                   value={session.difficulty}
                   onValueChange={(v) => updateDifficulty(v)}
@@ -108,7 +153,8 @@ const Lobby = () => {
                   <SelectContent>
                     {Object.entries(DIFFICULTY_CONFIG).map(([key, cfg]) => (
                       <SelectItem key={key} value={key}>
-                        {cfg.label} — {cfg.description}
+                        <span className="font-semibold">{cfg.label}</span>
+                        <span className="ml-2 text-muted-foreground text-xs">— {cfg.description}</span>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -122,60 +168,98 @@ const Lobby = () => {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
-              <Users className="h-4 w-4" /> Players ({players.length})
+              <Users className="h-4 w-4 text-primary" />
+              Players
+              <Badge variant="secondary" className="ml-auto font-mono">{players.length}</Badge>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {players.map((p, i) => (
-                <motion.div
-                  key={p.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  className="flex items-center justify-between rounded-lg border p-3"
-                >
-                  <div className="flex items-center gap-2">
-                    {p.is_game_master && <Crown className="h-4 w-4 text-secondary" />}
-                    <span className="font-medium">{p.nickname}</span>
-                    {p.is_game_master && (
-                      <Badge variant="secondary" className="text-xs">Game Master</Badge>
+              <AnimatePresence>
+                {players.map((p, i) => (
+                  <motion.div
+                    key={p.id}
+                    initial={{ opacity: 0, x: -16 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 16 }}
+                    transition={{ delay: i * 0.04 }}
+                    className={`flex items-center justify-between rounded-xl border px-4 py-2.5 transition-colors ${
+                      p.is_game_master
+                        ? "border-secondary/30 bg-secondary/5"
+                        : "border-border bg-background"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      {/* Avatar circle */}
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 font-display text-sm font-bold text-primary">
+                        {p.nickname.charAt(0).toUpperCase()}
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        {p.is_game_master && <Crown className="h-3.5 w-3.5 text-secondary shrink-0" />}
+                        <span className="font-medium text-sm">{p.nickname}</span>
+                        {p.is_game_master && (
+                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0">Teacher</Badge>
+                        )}
+                        {p.user_id === userId && (
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0">You</Badge>
+                        )}
+                      </div>
+                    </div>
+                    {isGameMaster && !p.is_game_master && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                        onClick={() => kickPlayer(p.id)}
+                        title={`Remove ${p.nickname}`}
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </Button>
                     )}
-                    {p.user_id === userId && (
-                      <Badge variant="outline" className="text-xs">You</Badge>
-                    )}
-                  </div>
-                  {isGameMaster && !p.is_game_master && (
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-7 w-7 text-destructive"
-                      onClick={() => kickPlayer(p.id)}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  )}
-                </motion.div>
-              ))}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+
+              {players.length === 0 && (
+                <p className="py-6 text-center text-sm text-muted-foreground">
+                  No players connected yet…
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Start Button (GM only) */}
+        {/* Start / Waiting */}
         {isGameMaster ? (
-          <Button
-            size="lg"
-            className="w-full gap-2 text-lg"
-            disabled={players.length < 1}
-            onClick={startGame}
-          >
-            <Play className="h-5 w-5" />
-            Start Game
-          </Button>
-        ) : (
-          <div className="text-center text-muted-foreground">
-            <p>Waiting for the Game Master to start...</p>
+          <div className="space-y-2">
+            <Button
+              size="lg"
+              className="w-full gap-2 text-base shadow-lg shadow-primary/20"
+              disabled={players.length < 1}
+              onClick={startGame}
+            >
+              <Play className="h-5 w-5" />
+              Start Game for Everyone
+            </Button>
+            <p className="text-center text-xs text-muted-foreground">
+              {players.length < 2
+                ? "Waiting for at least 1 student to join…"
+                : `${players.length} player${players.length !== 1 ? "s" : ""} ready`}
+            </p>
           </div>
+        ) : (
+          <Card className="border-primary/20 bg-primary/5">
+            <CardContent className="flex items-center justify-center gap-3 py-6">
+              <div className="flex gap-1">
+                <span className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:0ms]" />
+                <span className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:150ms]" />
+                <span className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:300ms]" />
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Waiting for the teacher to start the game…
+              </p>
+            </CardContent>
+          </Card>
         )}
       </motion.div>
     </div>

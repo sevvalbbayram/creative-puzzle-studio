@@ -19,26 +19,29 @@ import puzzleBgImg from "@/assets/puzzle-background.png";
 import { CREATIVITY_STAGES } from "@/lib/gameData";
 
 const slotPositions: Record<string, { top: string; left: string; width: string }> = {
-  preparation: { top: "24%", left: "10%", width: "13%" },
-  incubation: { top: "18%", left: "28%", width: "13%" },
-  illumination: { top: "14%", left: "45%", width: "13%" },
-  verification: { top: "6%", left: "66%", width: "13%" },
+  preparation:  { top: "56%", left: "4%",  width: "15%" },
+  incubation:   { top: "38%", left: "21%", width: "15%" },
+  illumination: { top: "22%", left: "38%", width: "15%" },
+  evaluation:   { top: "14%", left: "56%", width: "15%" },
+  elaboration:  { top: "28%", left: "74%", width: "15%" },
 };
 
 const quotePositions: Record<string, { top: string; left: string; width: string }> = {
-  preparation: { top: "38%", left: "8%", width: "16%" },
-  incubation: { top: "32%", left: "26%", width: "16%" },
-  illumination: { top: "28%", left: "43%", width: "16%" },
-  verification: { top: "20%", left: "64%", width: "16%" },
+  preparation:  { top: "74%", left: "2%",  width: "21%" },
+  incubation:   { top: "57%", left: "19%", width: "21%" },
+  illumination: { top: "42%", left: "36%", width: "21%" },
+  evaluation:   { top: "34%", left: "54%", width: "21%" },
+  elaboration:  { top: "48%", left: "72%", width: "21%" },
 };
 
 const jigsawClip = "polygon(8% 0%, 36% 0%, 38% 5%, 50% 8%, 62% 5%, 64% 0%, 92% 0%, 100% 8%, 100% 36%, 105% 38%, 108% 50%, 105% 62%, 100% 64%, 100% 92%, 92% 100%, 64% 100%, 62% 95%, 50% 92%, 38% 95%, 36% 100%, 8% 100%, 0% 92%, 0% 64%, -5% 62%, -8% 50%, -5% 38%, 0% 36%, 0% 8%)";
 
 const stageColors: Record<string, string> = {
-  preparation: "bg-stage-preparation/40",
-  incubation: "bg-stage-incubation/40",
+  preparation:  "bg-stage-preparation/40",
+  incubation:   "bg-stage-incubation/40",
   illumination: "bg-stage-illumination/40",
-  verification: "bg-stage-verification/40",
+  evaluation:   "bg-stage-evaluation/40",
+  elaboration:  "bg-stage-elaboration/40",
 };
 
 const TeacherDashboard = () => {

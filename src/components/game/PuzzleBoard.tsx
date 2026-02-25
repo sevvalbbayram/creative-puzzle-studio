@@ -1,4 +1,4 @@
-import { CREATIVITY_STAGES } from "@/lib/gameData";
+import { CreativityStage } from "@/lib/gameData";
 import puzzleBgImg from "@/assets/puzzle-background.png";
 import puzzleCompleteImg from "@/assets/puzzle-completed.png";
 import { SparkleEffect } from "./SparkleEffect";
@@ -12,6 +12,7 @@ interface SlotState {
 
 interface PuzzleBoardProps {
   phase: 1 | 2;
+  stages: CreativityStage[];
   currentSlots: SlotState[];
   feedback: { type: "correct" | "incorrect"; slotId: string } | null;
   onSlotTap: (slotId: string, stageId: string, slotType: "stage" | "quote") => void;
@@ -20,38 +21,55 @@ interface PuzzleBoardProps {
   completed?: boolean;
 }
 
-const stageColors: Record<string, { bg: string; border: string }> = {
-  preparation: { bg: "bg-stage-preparation", border: "border-stage-preparation" },
-  incubation: { bg: "bg-stage-incubation", border: "border-stage-incubation" },
-  illumination: { bg: "bg-stage-illumination", border: "border-stage-illumination" },
-  verification: { bg: "bg-stage-verification", border: "border-stage-verification" },
+const stageColors: Record<string, { bg: string; border: string; text: string }> = {
+  preparation:  { bg: "bg-stage-preparation",  border: "border-stage-preparation",  text: "text-white" },
+  incubation:   { bg: "bg-stage-incubation",   border: "border-stage-incubation",   text: "text-white" },
+  illumination: { bg: "bg-stage-illumination", border: "border-stage-illumination", text: "text-gray-900" },
+  evaluation:   { bg: "bg-stage-evaluation",   border: "border-stage-evaluation",   text: "text-white" },
+  elaboration:  { bg: "bg-stage-elaboration",  border: "border-stage-elaboration",  text: "text-white" },
 };
 
-// 4 slots — each centered on an individual bird body
+// 5 stage slots — arranged in a flowing diagonal from bottom-left to top-right
+// These positions are designed to sit on the elephant image body naturally
 const slotPositions: Record<string, { top: string; left: string; width: string }> = {
-  preparation: { top: "24%", left: "10%", width: "13%" },    // Left pair of geese
-  incubation: { top: "18%", left: "28%", width: "13%" },     // Center-left geese
-  illumination: { top: "14%", left: "45%", width: "13%" },   // Center-right goose
-  verification: { top: "6%", left: "66%", width: "13%" },    // Large goose, far right
+  preparation:  { top: "56%", left: "4%",  width: "15%" },
+  incubation:   { top: "38%", left: "21%", width: "15%" },
+  illumination: { top: "22%", left: "38%", width: "15%" },
+  evaluation:   { top: "14%", left: "56%", width: "15%" },
+  elaboration:  { top: "28%", left: "74%", width: "15%" },
 };
 
+// Quote slots sit below their corresponding stage slots
 const quotePositions: Record<string, { top: string; left: string; width: string }> = {
-  preparation: { top: "38%", left: "8%", width: "16%" },
-  incubation: { top: "32%", left: "26%", width: "16%" },
-  illumination: { top: "28%", left: "43%", width: "16%" },
-  verification: { top: "20%", left: "64%", width: "16%" },
+  preparation:  { top: "74%", left: "2%",  width: "21%" },
+  incubation:   { top: "57%", left: "19%", width: "21%" },
+  illumination: { top: "42%", left: "36%", width: "21%" },
+  evaluation:   { top: "34%", left: "54%", width: "21%" },
+  elaboration:  { top: "48%", left: "72%", width: "21%" },
 };
 
-const jigsawClip = "polygon(8% 0%, 36% 0%, 38% 5%, 50% 8%, 62% 5%, 64% 0%, 92% 0%, 100% 8%, 100% 36%, 105% 38%, 108% 50%, 105% 62%, 100% 64%, 100% 92%, 92% 100%, 64% 100%, 62% 95%, 50% 92%, 38% 95%, 36% 100%, 8% 100%, 0% 92%, 0% 64%, -5% 62%, -8% 50%, -5% 38%, 0% 36%, 0% 8%)";
+// Jigsaw outline shape — tab on top, blank on bottom, tab on right, blank on left
+const jigsawClip =
+  "polygon(8% 0%, 36% 0%, 38% 5%, 50% 8%, 62% 5%, 64% 0%, 92% 0%, 100% 8%, 100% 36%, 105% 38%, 108% 50%, 105% 62%, 100% 64%, 100% 92%, 92% 100%, 64% 100%, 62% 95%, 50% 92%, 38% 95%, 36% 100%, 8% 100%, 0% 92%, 0% 64%, -5% 62%, -8% 50%, -5% 38%, 0% 36%, 0% 8%)";
 
-export function PuzzleBoard({ phase, currentSlots, feedback, onSlotTap, onDrop, selectedPiece, completed }: PuzzleBoardProps) {
+export function PuzzleBoard({
+  phase,
+  stages,
+  currentSlots,
+  feedback,
+  onSlotTap,
+  onDrop,
+  selectedPiece,
+  completed,
+}: PuzzleBoardProps) {
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
   };
 
   return (
-    <div className="relative mx-auto aspect-[4/3] w-full max-w-2xl overflow-visible rounded-xl border-2 border-primary/20 shadow-lg touch-manipulation">
+    <div className="relative mx-auto aspect-[4/3] w-full max-w-2xl overflow-visible rounded-xl border-2 border-primary/20 shadow-xl touch-manipulation">
+      {/* Puzzle background image */}
       <img
         src={completed ? puzzleCompleteImg : puzzleBgImg}
         alt="Creativity Elephant Puzzle"
@@ -59,8 +77,14 @@ export function PuzzleBoard({ phase, currentSlots, feedback, onSlotTap, onDrop, 
         draggable={false}
       />
 
+      {/* Semi-transparent overlay for better slot contrast */}
+      {!completed && (
+        <div className="absolute inset-0 rounded-xl bg-black/10 pointer-events-none" />
+      )}
+
+      {/* Slot layer */}
       <div className="absolute inset-0">
-        {CREATIVITY_STAGES.map((stage, i) => {
+        {stages.map((stage, i) => {
           const stageSlot = currentSlots.find(
             (s) => s.stageId === stage.id && s.type === "stage"
           );
@@ -69,11 +93,13 @@ export function PuzzleBoard({ phase, currentSlots, feedback, onSlotTap, onDrop, 
           );
           const pos = slotPositions[stage.id];
           const qPos = quotePositions[stage.id];
-          const colors = stageColors[stage.id] || { bg: "bg-primary", border: "border-primary" };
+          const colors = stageColors[stage.id] ?? { bg: "bg-primary", border: "border-primary", text: "text-white" };
+
+          if (!pos) return null;
 
           return (
             <div key={stage.id}>
-              {/* Stage slot */}
+              {/* ── Stage slot ── */}
               {stageSlot && (
                 <button
                   type="button"
@@ -90,41 +116,46 @@ export function PuzzleBoard({ phase, currentSlots, feedback, onSlotTap, onDrop, 
                     width: pos.width,
                     clipPath: jigsawClip,
                   }}
-                  className={`flex h-8 items-center justify-center text-[7px] font-medium backdrop-blur-[1px] transition-all sm:h-10 sm:text-[9px] md:h-11 md:text-xs ${
+                  aria-label={stageSlot.filled ? stage.name : `Stage slot ${i + 1}`}
+                  className={[
+                    "puzzle-piece flex h-9 items-center justify-center text-center text-[7px] font-semibold leading-tight px-1",
+                    "backdrop-blur-[2px] transition-all duration-200 sm:h-11 sm:text-[9px] md:h-12 md:text-[10px]",
                     stageSlot.filled
-                      ? `${colors.bg}/50 text-white/90 jigsaw-filled`
+                      ? `${colors.bg}/70 ${colors.text} jigsaw-filled`
                       : selectedPiece
-                        ? "bg-black/20 text-white/80 animate-pulse jigsaw-empty-active"
-                        : "bg-black/15 text-white/70 hover:bg-black/20 jigsaw-empty"
-                  } ${
+                        ? "bg-white/25 text-white animate-pulse jigsaw-empty-active cursor-pointer"
+                        : "bg-black/20 text-white/80 hover:bg-white/20 jigsaw-empty cursor-pointer",
                     feedback?.slotId === stageSlot.id && feedback.type === "correct"
                       ? "animate-glow-correct"
-                      : ""
-                  } ${
+                      : "",
                     feedback?.slotId === stageSlot.id && feedback.type === "incorrect"
                       ? "animate-shake"
-                      : ""
-                  }`}
+                      : "",
+                  ].filter(Boolean).join(" ")}
                 >
                   {stageSlot.filled ? (
-                    <span className="flex items-center gap-1">
-                      <span className="text-[10px] sm:text-xs">🧩</span> {stage.name}
-                    </span>
+                    <span className="drop-shadow-sm font-display font-bold">{stage.name}</span>
                   ) : (
-                    `${i + 1}. ???`
+                    <span className="opacity-80">{i + 1}. ???</span>
                   )}
                 </button>
               )}
 
-              <SparkleEffect
-                trigger={feedback?.slotId === stageSlot?.id && feedback?.type === "correct" ? stageSlot?.id ?? null : null}
-                top={pos.top}
-                left={pos.left}
-                width={pos.width}
-              />
+              {stageSlot && (
+                <SparkleEffect
+                  trigger={
+                    feedback?.slotId === stageSlot.id && feedback.type === "correct"
+                      ? stageSlot.id
+                      : null
+                  }
+                  top={pos.top}
+                  left={pos.left}
+                  width={pos.width}
+                />
+              )}
 
-              {/* Quote slot (phase 2) */}
-              {phase === 2 && quoteSlot && (
+              {/* ── Quote slot (phase 2 only) ── */}
+              {phase === 2 && quoteSlot && qPos && (
                 <button
                   type="button"
                   onClick={() => onSlotTap(quoteSlot.id, quoteSlot.stageId, "quote")}
@@ -140,35 +171,40 @@ export function PuzzleBoard({ phase, currentSlots, feedback, onSlotTap, onDrop, 
                     width: qPos.width,
                     clipPath: jigsawClip,
                   }}
-                  className={`flex min-h-[1.8rem] items-center justify-center p-1.5 text-[5px] leading-tight backdrop-blur-[1px] transition-all sm:min-h-[2.4rem] sm:text-[7px] md:min-h-[2.8rem] md:text-[10px] ${
+                  aria-label={quoteSlot.filled ? `Quote for ${stage.name}` : `Quote slot for stage ${i + 1}`}
+                  className={[
+                    "puzzle-piece flex min-h-[2rem] items-center justify-center p-1.5 text-center text-[5px] leading-tight",
+                    "backdrop-blur-[2px] transition-all duration-200 sm:min-h-[2.6rem] sm:text-[7px] md:min-h-[3rem] md:text-[9px]",
                     quoteSlot.filled
-                      ? `${colors.bg}/50 text-white/90 jigsaw-filled`
+                      ? `${colors.bg}/65 ${colors.text} jigsaw-filled`
                       : selectedPiece
-                        ? "bg-black/15 text-white/70 animate-pulse jigsaw-empty-active"
-                        : "bg-black/10 text-white/60 hover:bg-black/15 jigsaw-empty"
-                  } ${
+                        ? "bg-white/20 text-white/90 animate-pulse jigsaw-empty-active cursor-pointer"
+                        : "bg-black/15 text-white/70 hover:bg-white/15 jigsaw-empty cursor-pointer",
                     feedback?.slotId === quoteSlot.id && feedback.type === "correct"
                       ? "animate-glow-correct"
-                      : ""
-                  } ${
+                      : "",
                     feedback?.slotId === quoteSlot.id && feedback.type === "incorrect"
                       ? "animate-shake"
-                      : ""
-                  }`}
+                      : "",
+                  ].filter(Boolean).join(" ")}
                 >
                   {quoteSlot.filled ? (
-                    <span className="flex items-center gap-1">
-                      <span className="text-[8px]">🧩</span> {stage.quote.slice(0, 25)}...
+                    <span className="italic drop-shadow-sm leading-tight px-0.5">
+                      "{stage.quote.length > 30 ? stage.quote.slice(0, 28) + "…" : stage.quote}"
                     </span>
                   ) : (
-                    "📝 ?"
+                    <span className="opacity-70">📝 ?</span>
                   )}
                 </button>
               )}
 
-              {phase === 2 && quoteSlot && (
+              {phase === 2 && quoteSlot && qPos && (
                 <SparkleEffect
-                  trigger={feedback?.slotId === quoteSlot.id && feedback?.type === "correct" ? quoteSlot.id : null}
+                  trigger={
+                    feedback?.slotId === quoteSlot.id && feedback.type === "correct"
+                      ? quoteSlot.id
+                      : null
+                  }
                   top={qPos.top}
                   left={qPos.left}
                   width={qPos.width}

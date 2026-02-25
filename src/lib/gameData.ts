@@ -1,4 +1,4 @@
-// The 4 pillars of creativity and their matching quotes
+// The 5 stages of the creative process and their matching quotes
 export interface CreativityStage {
   id: string;
   name: string;
@@ -42,15 +42,26 @@ export const CREATIVITY_STAGES_BASE: Omit<CreativityStage, "quote">[] = [
     color: "stage-illumination",
   },
   {
-    id: "verification",
-    name: "Verification",
+    id: "evaluation",
+    name: "Evaluation",
     quotes: [
       "To live a creative life, we must lose our fear of being wrong.",
       "Creativity is 1% inspiration and 99% perspiration.",
-      "The value of an idea lies in the using of it.",
       "Great ideas need great execution to become reality.",
+      "The difference between a good idea and a great one is ruthless editing.",
     ],
-    color: "stage-verification",
+    color: "stage-evaluation",
+  },
+  {
+    id: "elaboration",
+    name: "Elaboration",
+    quotes: [
+      "The value of an idea lies in the using of it.",
+      "An idea not coupled with action will never get any bigger than the brain cell it occupied.",
+      "Creativity without craft is only half the gift.",
+      "Bringing an idea to life is where imagination meets persistence.",
+    ],
+    color: "stage-elaboration",
   },
 ];
 
@@ -120,7 +131,7 @@ export function calculateScore(
   incorrectAttempts: number
 ): number {
   const config = DIFFICULTY_CONFIG[difficulty] || DIFFICULTY_CONFIG.medium;
-  const base = config.basePoints * 4; // 4 stages + 4 quotes = 8 placements
+  const base = config.basePoints * 5; // 5 stages + 5 quotes = 10 placements
   const timePenalty = Math.floor(elapsedMs / 1000) * 2;
   const accuracyPenalty = incorrectAttempts * 25;
   const raw = Math.max(base - timePenalty - accuracyPenalty, 50);

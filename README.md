@@ -1,73 +1,106 @@
-# Welcome to your Lovable project
+# Creativity Jigsaw Puzzle Game
 
-## Project info
+## Overview
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+A classroom-ready, web-based jigsaw puzzle game where players assemble an elephant-themed image while matching the stages of creativity (Preparation, Incubation, Illumination, Evaluation, Elaboration) with their corresponding quotes. Features a Game Master role with full control and a real-time multiplayer experience.
 
-## How can I edit this code?
+## Core Features
 
-There are several ways of editing your application.
+### 1. Landing Page & Game Lobby
 
-**Use Lovable**
+- Clean, inviting landing page with the game title "Creativity is..." and a playful design
+- **Game Master**: Can create a new game session, generating a unique shareable link
+- **Players**: Join via the shared link, enter a nickname, and wait in a lobby
+- Game Master sees a live list of connected players and can start the round when ready
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+### 2. The Puzzle Image
 
-Changes made via Lovable will be committed automatically to this repo.
+- A well-designed, aesthetically pleasing elephant illustration (whimsical, colorful, classroom-friendly) used as the puzzle background
+- The image is embedded as a static asset
 
-**Use your preferred IDE**
+### 3. Jigsaw Puzzle Mechanics
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- **Two-phase gameplay:**
+  - **Phase 1 – Stage Names**: Players first place the 5 creativity stage name pieces (Preparation, Incubation, Illumination, Evaluation, Elaboration) into the correct positions on the puzzle board
+  - **Phase 2 – Quotes**: After stages are placed, quote pieces become available to match with their corresponding stage
+- True jigsaw-style piece segmentation with drag-and-drop on desktop and touch/tap on mobile
+- Snap-to-grid behavior — pieces lock into place when dropped near the correct position
+- Visual and audio feedback for correct placements and incorrect attempts
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### 4. Game Master Controls
 
-Follow these steps:
+- Start/stop game rounds
+- Set difficulty level (Easy / Medium / Hard / Very Hard — affects time limits)
+- View live scoreboard during gameplay
+- Kick players from the session
+- Reset or start a new round
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### 5. Scoring & Feedback
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+- **Timer**: Counts elapsed time per player
+- **Points system**: Points awarded based on speed and accuracy (fewer incorrect attempts = higher score)
+- **Correct/Incorrect alerts**: Clear visual feedback (green flash for correct, red shake for incorrect)
+- **Difficulty multiplier**: Harder difficulty levels award more points
 
-# Step 3: Install the necessary dependencies.
-npm i
+### 6. Real-Time Leaderboard & Scoreboard
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+- Live scoreboard visible to Game Master during the game
+- Post-round results screen showing rankings for all players
+- Persistent all-time leaderboard saved across sessions
+
+### 7. Backend (Supabase)
+
+- **Database tables**: Players, game sessions, scores, leaderboard history
+- **Real-time**: Live updates for lobby, scoreboard, and game state using Supabase Realtime
+- **Authentication**: Simple nickname-based entry (no full account signup required), Game Master identified via session creator role
+- **Persistent storage**: All-time leaderboard and past game results saved to the database
+
+### 8. Responsive Design (Desktop & Mobile)
+
+- Fully responsive layout that adapts to phone, tablet, and desktop screens
+- Touch-optimized interactions for mobile devices
+- Puzzle board scales appropriately to screen size
+- Large, tappable UI elements for mobile users
+- Tested for 20–30 simultaneous users
+
+### 9. Additional UX Polish
+
+- Smooth animations for piece movement and snapping
+- Progress indicator showing how many pieces are placed
+- Confetti or celebration animation on puzzle completion
+- Clear instructions/rules modal for first-time players
+- Dark/light theme support for classroom projector compatibility
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js and npm (or yarn/bun)
+
+### Install and run
+
+```bash
+# Install dependencies
+npm install
+
+# Start the development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Build for production
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+npm run build
+```
 
-**Use GitHub Codespaces**
+The built files will be in the `dist/` directory.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Environment
 
-## What technologies are used for this project?
+Create a `.env` file with your Supabase credentials (see `.env.example` if present). The app expects `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` for the Supabase client.
 
-This project is built with:
+## Tech Stack
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+- **Frontend**: React, TypeScript, Vite
+- **UI**: Tailwind CSS, shadcn/ui, Framer Motion
+- **Backend**: Supabase (PostgreSQL, Realtime, Auth)

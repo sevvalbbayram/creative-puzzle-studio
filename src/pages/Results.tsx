@@ -1,28 +1,37 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Trophy, Clock, Target, Home, RotateCcw, Crown, Puzzle } from "lucide-react";
+import { Trophy, Clock, Target, Home, Crown, Puzzle, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAnonymousAuth } from "@/hooks/useAnonymousAuth";
 import { useGameSession } from "@/hooks/useGameSession";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import confetti from "canvas-confetti";
+
+const DIFFICULTY_LABELS: Record<string, string> = {
+  easy: "Easy",
+  medium: "Medium",
+  hard: "Hard",
+  very_hard: "Very Hard",
+};
 
 const Results = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
   const { userId } = useAnonymousAuth();
   const { session, players, currentPlayer } = useGameSession(sessionId ?? null, userId);
+  const confettiFired = useRef(false);
 
   const isGameMaster = currentPlayer?.is_game_master ?? false;
   const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
+  const myRank = sortedPlayers.findIndex((p) => p.user_id === userId) + 1;
 
-  // Save to leaderboard on mount
+  // Save to all-time leaderboard
   useEffect(() => {
-    if (!currentPlayer || !currentPlayer.completed || currentPlayer.score === 0) return;
-    const saveLeaderboard = async () => {
-      // Check if entry exists
+    if (!currentPlayer?.completed || currentPlayer.score === 0) return;
+    const save = async () => {
       const { data: existing } = await supabase
         .from("leaderboard")
         .select("*")
@@ -51,8 +60,18 @@ const Results = () => {
         });
       }
     };
-    saveLeaderboard();
+    save();
   }, [currentPlayer]);
+
+  // Fire confetti for top 3 finishers
+  useEffect(() => {
+    if (confettiFired.current || !players.length) return;
+    if (myRank >= 1 && myRank <= 3 && currentPlayer?.completed) {
+      confettiFired.current = true;
+      const count = myRank === 1 ? 300 : myRank === 2 ? 180 : 100;
+      confetti({ particleCount: count, spread: 100, origin: { y: 0.5 } });
+    }
+  }, [myRank, players.length, currentPlayer]);
 
   const formatTime = (ms: number) => {
     const s = Math.floor(ms / 1000);
@@ -64,13 +83,15 @@ const Results = () => {
     if (index === 0) return "🥇";
     if (index === 1) return "🥈";
     if (index === 2) return "🥉";
-    return `#${index + 1}`;
+    return null;
   };
 
   if (!session) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <Puzzle className="h-12 w-12 animate-spin text-primary" />
+        <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}>
+          <Puzzle className="h-12 w-12 text-primary" />
+        </motion.div>
       </div>
     );
   }
@@ -80,68 +101,133 @@ const Results = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
         className="w-full max-w-lg space-y-6"
       >
+        {/* Header */}
         <div className="text-center">
-          <Trophy className="mx-auto h-12 w-12 text-secondary" />
-          <h1 className="mt-2 text-3xl font-bold">Game Results</h1>
-          <p className="text-muted-foreground">
-            {session.difficulty.replace("_", " ")} difficulty
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", stiffness: 200, delay: 0.15 }}
+            className="mx-auto mb-3 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-secondary to-secondary/70 shadow-xl shadow-secondary/30"
+          >
+            <Trophy className="h-10 w-10 text-secondary-foreground" />
+          </motion.div>
+          <h1 className="font-display text-3xl font-bold text-foreground">Game Results</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {DIFFICULTY_LABELS[session.difficulty] ?? session.difficulty} difficulty &middot; {players.length} player{players.length !== 1 ? "s" : ""}
           </p>
+
+          {/* Personal result highlight */}
+          {currentPlayer && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="mt-4 inline-flex items-center gap-3 rounded-2xl border border-primary/20 bg-primary/5 px-5 py-3 shadow-sm"
+            >
+              <Star className="h-5 w-5 text-primary" />
+              <div className="text-left">
+                <p className="text-xs text-muted-foreground">Your score</p>
+                <p className="font-display text-2xl font-bold text-primary leading-none">
+                  {currentPlayer.score}
+                  <span className="ml-1 text-sm font-normal text-muted-foreground">pts</span>
+                </p>
+              </div>
+              {myRank > 0 && (
+                <div className="text-left border-l border-border pl-3">
+                  <p className="text-xs text-muted-foreground">Rank</p>
+                  <p className="font-display text-2xl font-bold leading-none">
+                    {getMedal(myRank - 1) ?? `#${myRank}`}
+                  </p>
+                </div>
+              )}
+            </motion.div>
+          )}
         </div>
 
-        {/* Scoreboard */}
+        {/* Full Scoreboard */}
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Scoreboard</CardTitle>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Trophy className="h-4 w-4 text-secondary" />
+              Full Scoreboard
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {sortedPlayers.map((p, i) => (
-                <div
-                  key={p.id}
-                  className={`flex items-center justify-between rounded-lg border p-3 ${
-                    p.user_id === userId ? "border-primary bg-primary/5" : ""
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-xl">{getMedal(i)}</span>
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-medium">{p.nickname}</span>
-                        {p.is_game_master && <Crown className="h-3 w-3 text-secondary" />}
-                        {p.user_id === userId && (
-                          <Badge variant="outline" className="text-[10px]">You</Badge>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {formatTime(p.elapsed_time_ms)}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Target className="h-3 w-3" />
-                          {p.incorrect_attempts} miss
-                        </span>
+              {sortedPlayers.map((p, i) => {
+                const isMe = p.user_id === userId;
+                const medal = getMedal(i);
+                return (
+                  <motion.div
+                    key={p.id}
+                    initial={{ opacity: 0, x: -16 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.06 }}
+                    className={[
+                      "flex items-center justify-between rounded-xl border px-4 py-3 transition-colors",
+                      isMe
+                        ? "border-primary/30 bg-primary/5 ring-1 ring-primary/20"
+                        : i === 0
+                          ? "border-secondary/30 bg-secondary/5"
+                          : "border-border bg-background",
+                    ].join(" ")}
+                  >
+                    <div className="flex items-center gap-3">
+                      {/* Rank / Medal */}
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted font-display text-base font-bold">
+                        {medal ?? i + 1}
+                      </span>
+
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-display font-semibold text-sm">{p.nickname}</span>
+                          {p.is_game_master && <Crown className="h-3 w-3 text-secondary" />}
+                          {isMe && <Badge variant="outline" className="text-[10px] px-1.5 py-0">You</Badge>}
+                          {!p.completed && (
+                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 opacity-60">
+                              Incomplete
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="mt-0.5 flex items-center gap-3 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {formatTime(p.elapsed_time_ms)}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Target className="h-3 w-3" />
+                            {p.incorrect_attempts} miss{p.incorrect_attempts !== 1 ? "es" : ""}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <span className="text-lg font-bold text-primary">{p.score}</span>
-                </div>
-              ))}
+
+                    <span className={`font-display text-xl font-bold ${i === 0 ? "text-secondary" : "text-primary"}`}>
+                      {p.score}
+                    </span>
+                  </motion.div>
+                );
+              })}
+
+              {sortedPlayers.length === 0 && (
+                <p className="py-6 text-center text-sm text-muted-foreground">No scores yet.</p>
+              )}
             </div>
           </CardContent>
         </Card>
 
         {/* Actions */}
-        <div className="flex gap-3">
-          <Button variant="outline" className="flex-1 gap-2" onClick={() => navigate("/")}>
+        <div className="grid grid-cols-2 gap-3">
+          <Button variant="outline" className="gap-2" onClick={() => navigate("/")}>
             <Home className="h-4 w-4" />
             Home
           </Button>
-          <Button variant="outline" className="flex-1 gap-2" onClick={() => navigate("/leaderboard")}>
+          <Button variant="outline" className="gap-2" onClick={() => navigate("/leaderboard")}>
             <Trophy className="h-4 w-4" />
-            Leaderboard
+            All-time Board
           </Button>
         </div>
       </motion.div>

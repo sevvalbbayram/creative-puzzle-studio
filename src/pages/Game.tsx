@@ -139,23 +139,23 @@ const Game = () => {
 
   useEffect(() => {
     if (phase === 1 && !phaseTransition) {
-      const allStagesPlaced = slots.every((s) => s.type === "stage" && s.filled);
-      if (allStagesPlaced && slots.length > 0) {
-        // Show transition overlay before moving to phase 2
+      const stageSlots = slots.filter((s) => s.type === "stage");
+      const allStagesPlaced = stageSlots.length === stages.length && stageSlots.every((s) => s.filled);
+      if (allStagesPlaced && stageSlots.length > 0) {
         setPhaseTransition(true);
         playCorrectSound();
         confetti({ particleCount: 80, spread: 70, origin: { y: 0.5 } });
 
         setTimeout(() => {
-        const quotePieces: PieceState[] = stages.map((s) => ({
-          id: `quote-${s.id}`,
-          type: "quote" as const,
-          stageId: s.id,
-          label: s.quote,
-          placed: false,
-        }));
-        setPieces(shuffleArray(quotePieces));
-        const quoteSlots = stages.map((s) => ({
+          const quotePieces: PieceState[] = stages.map((s) => ({
+            id: `quote-${s.id}`,
+            type: "quote" as const,
+            stageId: s.id,
+            label: s.quote,
+            placed: false,
+          }));
+          setPieces(shuffleArray(quotePieces));
+          const quoteSlots = stages.map((s) => ({
             id: `slot-quote-${s.id}`,
             stageId: s.id,
             filled: false,
@@ -167,7 +167,7 @@ const Game = () => {
         }, 2500);
       }
     }
-  }, [phase, slots]);
+  }, [phase, slots, stages, phaseTransition]);
 
   // Check completion (phase 2 all quotes placed)
   useEffect(() => {
@@ -186,13 +186,13 @@ const Game = () => {
     }
   }, [phase, slots, completed, difficulty, elapsedMs, incorrectAttempts, updateScore]);
 
-  // 50% milestone celebration
+  // 50% milestone celebration (5 out of 10 placed)
   useEffect(() => {
     if (halfwayTriggered.current) return;
     const placed = phase === 1
       ? pieces.filter((p) => p.placed).length
-      : 4 + pieces.filter((p) => p.placed).length;
-    if (placed >= 4) {
+      : 5 + pieces.filter((p) => p.placed).length;
+    if (placed >= 5) {
       halfwayTriggered.current = true;
       setShowHalfwayToast(true);
       confetti({ particleCount: 60, spread: 55, origin: { y: 0.6 } });
@@ -253,10 +253,10 @@ const Game = () => {
     [handleSlotTap]
   );
 
-  const totalPieces = 8;
+  const totalPieces = 10; // 5 stage names + 5 quotes
   const actualPlaced = phase === 1
     ? pieces.filter((p) => p.placed).length
-    : 4 + pieces.filter((p) => p.placed).length;
+    : 5 + pieces.filter((p) => p.placed).length;
 
   const formatTime = (ms: number) => {
     const s = Math.floor(ms / 1000);
@@ -347,6 +347,7 @@ const Game = () => {
         <div className="flex-1">
           <PuzzleBoard
             phase={phase}
+            stages={stages}
             currentSlots={currentSlots}
             feedback={feedback}
             onSlotTap={handleSlotTap}
