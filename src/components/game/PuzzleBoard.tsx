@@ -29,24 +29,25 @@ const stageColors: Record<string, { bg: string; border: string; text: string }> 
   elaboration:  { bg: "bg-stage-elaboration",  border: "border-stage-elaboration",  text: "text-white" },
 };
 
-// 5 stage slots: Preparation, Incubation, Illumination, Evaluation on the birds (arc at top);
-// Elaboration on the elephant body (center-lower).
-const slotPositions: Record<string, { top: string; left: string; width: string }> = {
-  preparation:  { top: "18%", left: "22%", width: "15%" },  // bird (left)
-  incubation:   { top: "12%", left: "36%", width: "15%" },  // bird
-  illumination: { top: "10%", left: "50%", width: "15%" },  // bird (center)
-  evaluation:   { top: "14%", left: "64%", width: "15%" },  // bird (right)
-  elaboration:  { top: "48%", left: "42%", width: "15%" },  // elephant body
+// Single source of truth for all difficulties: stage + quote positions stay aligned and identical
+// across easy/medium/hard/very_hard. Stages 1–4 sit on the birds (arc left→right); Elaboration on elephant.
+const SLOT_LAYOUT: Record<
+  string,
+  { stage: { top: string; left: string; width: string }; quote: { top: string; left: string; width: string } }
+> = {
+  preparation:  { stage: { top: "15%", left: "16%", width: "16%" }, quote: { top: "26%", left: "14%", width: "22%" } },  // bird 1
+  incubation:   { stage: { top: "10%", left: "32%", width: "16%" }, quote: { top: "22%", left: "30%", width: "22%" } },  // bird 2
+  illumination: { stage: { top: "8%",  left: "48%", width: "16%" }, quote: { top: "20%", left: "46%", width: "22%" } },  // bird 3
+  evaluation:   { stage: { top: "12%", left: "64%", width: "16%" }, quote: { top: "24%", left: "62%", width: "22%" } },  // bird 4
+  elaboration:  { stage: { top: "44%", left: "40%", width: "16%" }, quote: { top: "56%", left: "36%", width: "24%" } },   // elephant body
 };
 
-// Quote slots sit below their corresponding stage slots
-const quotePositions: Record<string, { top: string; left: string; width: string }> = {
-  preparation:  { top: "32%", left: "18%", width: "21%" },
-  incubation:   { top: "28%", left: "32%", width: "21%" },
-  illumination: { top: "26%", left: "46%", width: "21%" },
-  evaluation:   { top: "30%", left: "60%", width: "21%" },
-  elaboration:  { top: "62%", left: "38%", width: "21%" },
-};
+const slotPositions: Record<string, { top: string; left: string; width: string }> = Object.fromEntries(
+  Object.entries(SLOT_LAYOUT).map(([id, layout]) => [id, layout.stage])
+);
+const quotePositions: Record<string, { top: string; left: string; width: string }> = Object.fromEntries(
+  Object.entries(SLOT_LAYOUT).map(([id, layout]) => [id, layout.quote])
+);
 
 // Jigsaw outline shape — tab on top, blank on bottom, tab on right, blank on left
 const jigsawClip =
