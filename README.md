@@ -97,18 +97,20 @@ The built files will be in the `dist/` directory.
 
 ### Environment
 
-Create a `.env` file with your Supabase credentials (see `.env.example` if present). The app expects `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` for the Supabase client.
+Copy `.env.example` to `.env` and set:
 
-### Optional: Demo teacher account
+- `VITE_SUPABASE_URL` — your project URL (e.g. `https://xxxx.supabase.co`)
+- `VITE_SUPABASE_PUBLISHABLE_KEY` — the **anon** public key from Supabase
 
-To enable the **Use Demo Account** button on the Teacher Portal (one-click test login), create a user in Supabase once:
+## Create Supabase (backend setup)
 
-1. In Supabase Dashboard go to **Authentication** → **Users** → **Add user** → **Create new user**.
-2. Email: `demo.teacher@puzzle.com`
-3. Password: `Teacher2024!`
-4. Leave **Auto Confirm User** checked so no email verification is needed.
+Full step-by-step instructions are in **[supabase/README.md](supabase/README.md)**. Summary:
 
-After that, teachers can click **Use Demo Account →** to sign in directly. Other teachers can still create their own accounts via **Create Account**.
+1. **Create a project** at [supabase.com](https://supabase.com).
+2. **Get URL and anon key** from **Project Settings** → **API** and set `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in `.env`.
+3. **Run migrations** with the Supabase CLI (`supabase link` then `supabase db push`) or by running each file in `supabase/migrations/` in order in the SQL Editor.
+4. **Enable Auth:** **Email** (on) and **Anonymous** (on) under **Authentication** → **Providers**.
+5. **Optional – demo teacher:** Create user `demo.teacher@puzzle.com` / `Teacher2024!` in the Dashboard, or add `SUPABASE_SERVICE_ROLE_KEY` to `.env` and run `npm run db:seed-demo`.
 
 ## Tech Stack
 
