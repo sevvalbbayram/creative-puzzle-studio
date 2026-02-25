@@ -108,7 +108,12 @@ export function useGameSession(sessionId: string | null, userId: string | null) 
   // Join existing session by code — works for both lobby and in-progress games
   const joinSession = useCallback(
     async (code: string, nickname: string) => {
-      if (!userId) return null;
+      if (!userId) {
+        setError(
+          "Sign-in is required to join. In a private/incognito window, allow cookies and site data for this site (browser settings or the banner above), then reload the page and try again. Or use a normal browser window."
+        );
+        return null;
+      }
       setError(null);
 
       // Accept lobby AND playing sessions so late-joiners can still enter
