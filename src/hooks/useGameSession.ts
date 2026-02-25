@@ -109,29 +109,35 @@ export function useGameSession(sessionId: string | null, userId: string | null) 
   const joinSession = useCallback(
     async (code: string, nickname: string) => {
       if (!userId) return null;
+      setError(null);
+
       const { data: sess, error: sessErr } = await supabase
         .from("game_sessions")
         .select("*")
         .eq("code", code.toUpperCase())
         .eq("status", "lobby")
         .single();
+
       if (sessErr || !sess) {
         setError("Game not found or already started.");
         return null;
       }
+
       const { error: playerErr } = await supabase.from("game_players").insert({
         session_id: sess.id,
         user_id: userId,
         nickname,
       });
+
       if (playerErr) {
-        if (playerErr.message.includes("duplicate")) {
-          setError("You're already in this game.");
-        } else {
-          setError(playerErr.message);
+        if (playerErr.message.includes("duplicate") || playerErr.code === "23505") {
+          // Already in this game — redirect to lobby instead of showing an error
+          return sess;
         }
+        setError(playerErr.message);
         return null;
       }
+
       return sess;
     },
     [userId]
