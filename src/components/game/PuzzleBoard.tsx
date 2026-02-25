@@ -32,15 +32,18 @@ const stageColors: Record<string, { bg: string; border: string; text: string }> 
 // Single source of truth for all difficulties: stage + quote positions stay aligned and identical
 // across easy/medium/hard/very_hard. Stages 1–4 sit on the birds (arc left→right); Elaboration on elephant.
 // Pillars are placed on the bird bodies for better aesthetics; quotes sit just below each pillar.
+// Bird arc: Bird 1 (lower-left) → Bird 4 (upper-right).
+// top values follow the arc; left values centre each slot on its bird body.
+// Quote slots sit directly below the stage slot (+11%) to keep each pair visually grouped.
 const SLOT_LAYOUT: Record<
   string,
   { stage: { top: string; left: string; width: string }; quote: { top: string; left: string; width: string } }
 > = {
-  preparation:  { stage: { top: "20%", left: "15%", width: "16%" }, quote: { top: "31%", left: "13%", width: "22%" } },  // on bird 1
-  incubation:   { stage: { top: "18%", left: "31%", width: "16%" }, quote: { top: "29%", left: "29%", width: "22%" } },  // on bird 2
-  illumination: { stage: { top: "17%", left: "47%", width: "16%" }, quote: { top: "28%", left: "45%", width: "22%" } },  // on bird 3
-  evaluation:   { stage: { top: "19%", left: "63%", width: "16%" }, quote: { top: "30%", left: "61%", width: "22%" } },  // on bird 4
-  elaboration:  { stage: { top: "44%", left: "40%", width: "16%" }, quote: { top: "56%", left: "36%", width: "24%" } },   // elephant body
+  preparation:  { stage: { top: "25%", left: "10%", width: "16%" }, quote: { top: "36%", left: "8%",  width: "22%" } },  // bird 1 (left, lowest)
+  incubation:   { stage: { top: "22%", left: "29%", width: "16%" }, quote: { top: "33%", left: "27%", width: "22%" } },  // bird 2
+  illumination: { stage: { top: "20%", left: "45%", width: "16%" }, quote: { top: "31%", left: "43%", width: "22%" } },  // bird 3
+  evaluation:   { stage: { top: "18%", left: "63%", width: "16%" }, quote: { top: "29%", left: "61%", width: "22%" } },  // bird 4 (right, highest)
+  elaboration:  { stage: { top: "44%", left: "40%", width: "16%" }, quote: { top: "56%", left: "36%", width: "24%" } },  // elephant body
 };
 
 const slotPositions: Record<string, { top: string; left: string; width: string }> = Object.fromEntries(
