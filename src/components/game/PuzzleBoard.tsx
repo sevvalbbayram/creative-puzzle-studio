@@ -29,23 +29,23 @@ const stageColors: Record<string, { bg: string; border: string; text: string }> 
   elaboration:  { bg: "bg-stage-elaboration",  border: "border-stage-elaboration",  text: "text-white" },
 };
 
-// 5 stage slots — arranged in a flowing diagonal from bottom-left to top-right
-// These positions are designed to sit on the elephant image body naturally
+// 5 stage slots: Preparation, Incubation, Illumination, Evaluation on the birds (arc at top);
+// Elaboration on the elephant body (center-lower).
 const slotPositions: Record<string, { top: string; left: string; width: string }> = {
-  preparation:  { top: "56%", left: "4%",  width: "15%" },
-  incubation:   { top: "38%", left: "21%", width: "15%" },
-  illumination: { top: "22%", left: "38%", width: "15%" },
-  evaluation:   { top: "14%", left: "56%", width: "15%" },
-  elaboration:  { top: "28%", left: "74%", width: "15%" },
+  preparation:  { top: "18%", left: "22%", width: "15%" },  // bird (left)
+  incubation:   { top: "12%", left: "36%", width: "15%" },  // bird
+  illumination: { top: "10%", left: "50%", width: "15%" },  // bird (center)
+  evaluation:   { top: "14%", left: "64%", width: "15%" },  // bird (right)
+  elaboration:  { top: "48%", left: "42%", width: "15%" },  // elephant body
 };
 
 // Quote slots sit below their corresponding stage slots
 const quotePositions: Record<string, { top: string; left: string; width: string }> = {
-  preparation:  { top: "74%", left: "2%",  width: "21%" },
-  incubation:   { top: "57%", left: "19%", width: "21%" },
-  illumination: { top: "42%", left: "36%", width: "21%" },
-  evaluation:   { top: "34%", left: "54%", width: "21%" },
-  elaboration:  { top: "48%", left: "72%", width: "21%" },
+  preparation:  { top: "32%", left: "18%", width: "21%" },
+  incubation:   { top: "28%", left: "32%", width: "21%" },
+  illumination: { top: "26%", left: "46%", width: "21%" },
+  evaluation:   { top: "30%", left: "60%", width: "21%" },
+  elaboration:  { top: "62%", left: "38%", width: "21%" },
 };
 
 // Jigsaw outline shape — tab on top, blank on bottom, tab on right, blank on left
