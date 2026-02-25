@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Copy, Check, Users, Crown, Settings, Play, X, Puzzle,
 } from "lucide-react";
+import { AppLogo } from "@/components/AppLogo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -81,8 +82,8 @@ const Lobby = () => {
       >
         {/* Header */}
         <div className="text-center">
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary shadow-lg shadow-primary/25">
-            <Puzzle className="h-7 w-7 text-primary-foreground" />
+          <div className="mx-auto mb-3 flex justify-center">
+            <AppLogo size="md" />
           </div>
           <h1 className="font-display text-3xl font-bold text-foreground">Game Lobby</h1>
           <p className="mt-1 text-sm text-muted-foreground">

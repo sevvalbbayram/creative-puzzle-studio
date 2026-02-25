@@ -5,6 +5,7 @@ import {
   Puzzle, Users, Trophy, ArrowRight, BookOpen,
   LogIn, Sparkles, LogOut, PlusCircle,
 } from "lucide-react";
+import { AppLogo } from "@/components/AppLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -133,9 +134,9 @@ const Index = () => {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", stiffness: 220, delay: 0.18 }}
-            className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-primary to-primary/70 shadow-xl shadow-primary/30"
+            className="mx-auto mb-4 flex justify-center"
           >
-            <Puzzle className="h-10 w-10 text-primary-foreground" />
+            <AppLogo size="lg" />
           </motion.div>
           <h1 className="font-display text-4xl font-bold tracking-tight text-foreground md:text-5xl">
             Creativity is<span className="text-primary">…</span>
