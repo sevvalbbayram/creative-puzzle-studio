@@ -59,34 +59,20 @@ export default function TeacherLogin() {
     }
   };
 
-  // Fill the demo credentials and immediately attempt sign-in
+  // Demo account: sign in only (no auto sign-up — avoids rate limits and keeps demo as a test account)
   const handleUseDemo = async () => {
     setEmail(DEMO_EMAIL);
     setPassword(DEMO_PASSWORD);
     setError(null);
+    setSuccess(null);
     setSubmitting(true);
 
-    // Try sign in first; if not found, auto-register the demo account
-    const signinResult = await signIn(DEMO_EMAIL, DEMO_PASSWORD);
-    if (!signinResult.error) {
-      setSubmitting(false);
-      return;
-    }
-
-    // Demo account doesn't exist yet — create it
-    const signupResult = await signUp(DEMO_EMAIL, DEMO_PASSWORD, "Demo Teacher");
-    if (signupResult.error) {
-      setError("Could not create demo account: " + signupResult.error);
-      setSubmitting(false);
-      return;
-    }
-
-    // Try signing in again after registration
-    const retry = await signIn(DEMO_EMAIL, DEMO_PASSWORD);
+    const result = await signIn(DEMO_EMAIL, DEMO_PASSWORD);
     setSubmitting(false);
-    if (retry.error) {
-      setSuccess(
-        "Demo account created! If email confirmation is required, check your inbox — or disable it in Supabase."
+
+    if (result.error) {
+      setError(
+        "Demo sign-in failed. If the demo user isn't set up yet, create your own teacher account below."
       );
     }
   };
@@ -152,6 +138,9 @@ export default function TeacherLogin() {
           >
             {submitting ? "Signing in…" : "Use Demo Account →"}
           </Button>
+          <p className="mt-2 text-center text-[11px] text-muted-foreground">
+            Direct sign-in for testing. Other teachers can create their own account below.
+          </p>
         </div>
 
         {/* Auth tabs */}

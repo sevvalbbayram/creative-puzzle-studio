@@ -99,6 +99,17 @@ The built files will be in the `dist/` directory.
 
 Create a `.env` file with your Supabase credentials (see `.env.example` if present). The app expects `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` for the Supabase client.
 
+### Optional: Demo teacher account
+
+To enable the **Use Demo Account** button on the Teacher Portal (one-click test login), create a user in Supabase once:
+
+1. In Supabase Dashboard go to **Authentication** → **Users** → **Add user** → **Create new user**.
+2. Email: `demo.teacher@puzzle.com`
+3. Password: `Teacher2024!`
+4. Leave **Auto Confirm User** checked so no email verification is needed.
+
+After that, teachers can click **Use Demo Account →** to sign in directly. Other teachers can still create their own accounts via **Create Account**.
+
 ## Tech Stack
 
 - **Frontend**: React, TypeScript, Vite
