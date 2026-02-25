@@ -7,21 +7,24 @@ export function useAnonymousAuth() {
 
   useEffect(() => {
     const init = async () => {
-      // Check existing session
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        setUserId(session.user.id);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          setUserId(session.user.id);
+          setLoading(false);
+          return;
+        }
+        const { data, error } = await supabase.auth.signInAnonymously();
+        if (error) {
+          console.error("Anonymous auth error:", error);
+        } else {
+          setUserId(data.user?.id ?? null);
+        }
+      } catch (e) {
+        console.error("Auth init error:", e);
+      } finally {
         setLoading(false);
-        return;
       }
-      // Sign in anonymously
-      const { data, error } = await supabase.auth.signInAnonymously();
-      if (error) {
-        console.error("Anonymous auth error:", error);
-      } else {
-        setUserId(data.user?.id ?? null);
-      }
-      setLoading(false);
     };
 
     init();

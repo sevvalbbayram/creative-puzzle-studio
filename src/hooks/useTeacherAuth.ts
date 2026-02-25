@@ -7,12 +7,19 @@ export function useTeacherAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      const u = session?.user ?? null;
-      // Anonymous users carry is_anonymous: true — exclude them
-      setUser(u && !u.is_anonymous ? u : null);
-      setLoading(false);
-    });
+    const init = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const u = session?.user ?? null;
+        setUser(u && !u.is_anonymous ? u : null);
+      } catch (e) {
+        console.error("Teacher auth init error:", e);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    init();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       const u = session?.user ?? null;

@@ -28,11 +28,13 @@ const Index = () => {
   const joinCode = searchParams.get("code");
 
   // Teacher auth (real Supabase email/password session)
-  const { user: teacherUser, displayName: teacherName, signOut: teacherSignOut } = useTeacherAuth();
+  const { user: teacherUser, displayName: teacherName, signOut: teacherSignOut, loading: teacherAuthLoading } = useTeacherAuth();
 
   // Anonymous auth (used for both teachers creating games and students joining)
   const { userId, loading: authLoading } = useAnonymousAuth();
   const { createSession, joinSession, error, setError } = useGameSession(null, userId);
+
+  const loading = authLoading || teacherAuthLoading;
 
   const [nickname, setNickname] = useState(() => teacherName ?? "");
   const [gameCode, setGameCode] = useState(joinCode || "");
@@ -67,7 +69,7 @@ const Index = () => {
     setMode("home");
   };
 
-  if (authLoading) {
+  if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <motion.div
@@ -171,7 +173,7 @@ const Index = () => {
               <div>
                 <p className="text-xs text-muted-foreground">Signed in as teacher</p>
                 <p className="font-display font-bold text-foreground">{teacherName}</p>
-                <p className="text-[11px] text-muted-foreground">{teacherUser.email}</p>
+                <p className="text-[11px] text-muted-foreground">{teacherUser?.email ?? ""}</p>
               </div>
               <Button
                 variant="ghost"
