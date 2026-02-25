@@ -110,7 +110,7 @@ export function useGameSession(sessionId: string | null, userId: string | null) 
     async (code: string, nickname: string) => {
       if (!userId) {
         setError(
-          "Sign-in is required to join. In a private/incognito window, allow cookies and site data for this site (browser settings or the banner above), then reload the page and try again. Or use a normal browser window."
+          "Sign-in is required to join. Use \"Sign in again\" below to retry, or allow cookies and site data for this site and reload."
         );
         return null;
       }

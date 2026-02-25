@@ -31,7 +31,7 @@ const Index = () => {
   const { user: teacherUser, displayName: teacherName, signOut: teacherSignOut, loading: teacherAuthLoading } = useTeacherAuth();
 
   // Anonymous auth (used for both teachers creating games and students joining)
-  const { userId, loading: authLoading } = useAnonymousAuth();
+  const { userId, loading: authLoading, authError, retryAuth } = useAnonymousAuth();
   const { createSession, joinSession, error, setError } = useGameSession(null, userId);
 
   const loading = authLoading || teacherAuthLoading;
@@ -368,12 +368,23 @@ const Index = () => {
                       onKeyDown={(e) => e.key === "Enter" && handleJoin()}
                     />
                   </div>
-                  {error && (
-                    <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                      {error}
-                    </p>
+                  {(error || authError) && (
+                    <div className="space-y-2 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                      <p>{error || authError}</p>
+                      {(!userId || authError) && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="border-destructive/50 text-destructive hover:bg-destructive/10"
+                          onClick={() => { setError(null); retryAuth(); }}
+                        >
+                          Sign in again
+                        </Button>
+                      )}
+                    </div>
                   )}
-                  <div className="flex gap-2 pt-1">
+                  <div className="flex flex-wrap gap-2 pt-1">
                     <Button
                       variant="ghost"
                       onClick={() => { setMode("home"); setError(null); }}
@@ -381,7 +392,7 @@ const Index = () => {
                       Back
                     </Button>
                     <Button
-                      className="flex-1 gap-2"
+                      className="flex-1 gap-2 min-w-0"
                       disabled={!nickname.trim() || !gameCode.trim() || submitting}
                       onClick={handleJoin}
                     >
