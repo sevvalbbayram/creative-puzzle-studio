@@ -14,6 +14,7 @@ import { useAnonymousAuth } from "@/hooks/useAnonymousAuth";
 import { useGameSession } from "@/hooks/useGameSession";
 import { useTeacherAuth } from "@/hooks/useTeacherAuth";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { JoinQRCode } from "@/components/JoinQRCode";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -225,25 +226,38 @@ const TeacherDashboard = () => {
                 As the teacher, this page stays on the dashboard. To play the puzzle like a student, open the link below in an <strong>incognito or private window</strong> (or another browser), then join with a nickname.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                <Input
-                  readOnly
+            <CardContent className="space-y-4">
+              {/* QR code — primary way for mobile: scan to open join page with code pre-filled */}
+              <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <JoinQRCode
+                  key={session?.id ?? "no-session"}
                   value={joinLink}
-                  className="font-mono text-xs bg-muted/50"
+                  label="Scan to join (opens link with code)"
+                  size={160}
+                  className="shrink-0"
                 />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-2 shrink-0"
-                  onClick={copyJoinLink}
-                >
-                  {joinLinkCopied ? <Check className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4" />}
-                  {joinLinkCopied ? "Copied!" : "Copy join link"}
-                </Button>
+                <div className="flex flex-col gap-2 flex-1 min-w-0 w-full sm:w-auto">
+                  <p className="text-xs text-muted-foreground font-medium">Or copy link</p>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <Input
+                      readOnly
+                      value={joinLink}
+                      className="font-mono text-xs bg-muted/50 min-h-[44px] touch-manipulation"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-2 shrink-0 min-h-[44px] touch-manipulation"
+                      onClick={copyJoinLink}
+                    >
+                      {joinLinkCopied ? <Check className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4" />}
+                      {joinLinkCopied ? "Copied!" : "Copy link"}
+                    </Button>
+                  </div>
+                </div>
               </div>
               <p className="text-xs text-muted-foreground">
-                Or share this link / code <strong>{session?.code}</strong> with students — they go to the site, enter the code, and join.
+                Share code <strong>{session?.code}</strong> or the link — students open the site, enter the code (or scan QR), and join.
               </p>
             </CardContent>
           </Card>

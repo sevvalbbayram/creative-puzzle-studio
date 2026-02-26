@@ -317,7 +317,7 @@ const Game = () => {
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8"
+            className="h-10 w-10 min-h-[44px] min-w-[44px] touch-manipulation sm:h-8 sm:w-8 sm:min-h-0 sm:min-w-0"
             onClick={() => {
               localStorage.removeItem("puzzle-instructions-seen");
               window.location.reload();

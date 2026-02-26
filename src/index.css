@@ -5,6 +5,13 @@
 @tailwind utilities;
 
 @layer base {
+  /* Mobile: comfortable touch targets and no 300ms tap delay on interactive elements */
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  button, [role="button"], a, input, select, textarea, [tabindex]:not([tabindex="-1"]) {
+    touch-action: manipulation;
+  }
   :root {
     --background: 45 30% 97%;
     --foreground: 240 20% 15%;
@@ -189,4 +196,13 @@
 html {
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
+}
+
+/* Safe area for notched devices (e.g. iPhone) */
+@supports (padding: env(safe-area-inset-top)) {
+  body {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }

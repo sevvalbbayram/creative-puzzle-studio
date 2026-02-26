@@ -353,6 +353,7 @@ const Index = () => {
                       onChange={(e) => setNickname(e.target.value)}
                       maxLength={20}
                       autoFocus
+                      className="min-h-[44px] touch-manipulation"
                     />
                   </div>
                   <div>
@@ -365,7 +366,7 @@ const Index = () => {
                       value={gameCode}
                       onChange={(e) => setGameCode(e.target.value.toUpperCase())}
                       maxLength={6}
-                      className="text-center font-display text-xl tracking-[0.35em]"
+                      className="text-center font-display text-xl tracking-[0.35em] min-h-[44px] touch-manipulation"
                       onKeyDown={(e) => e.key === "Enter" && handleJoin()}
                     />
                   </div>
@@ -388,12 +389,13 @@ const Index = () => {
                   <div className="flex flex-wrap gap-2 pt-1">
                     <Button
                       variant="ghost"
+                      className="min-h-[44px] touch-manipulation"
                       onClick={() => { setMode("home"); setError(null); }}
                     >
                       Back
                     </Button>
                     <Button
-                      className="flex-1 gap-2 min-w-0"
+                      className="flex-1 gap-2 min-w-0 min-h-[44px] touch-manipulation"
                       disabled={!nickname.trim() || !gameCode.trim() || submitting}
                       onClick={handleJoin}
                     >

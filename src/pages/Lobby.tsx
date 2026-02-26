@@ -5,6 +5,7 @@ import {
   Copy, Check, Users, Crown, Settings, Play, X, Puzzle,
 } from "lucide-react";
 import { AppLogo } from "@/components/AppLogo";
+import { JoinQRCode } from "@/components/JoinQRCode";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -67,7 +68,7 @@ const Lobby = () => {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background px-4">
         <p className="text-muted-foreground">Game session not found.</p>
-        <Button onClick={() => navigate("/")}>Go Home</Button>
+        <Button onClick={() => navigate("/")} className="min-h-[44px] touch-manipulation">Go Home</Button>
       </div>
     );
   }
@@ -90,44 +91,55 @@ const Lobby = () => {
             {isGameMaster ? "Share the code below with your students" : "Waiting for the game to start…"}
           </p>
 
-          {/* Game code display */}
-          <div className="mt-3 inline-flex items-center gap-2 rounded-2xl border-2 border-primary/20 bg-card px-5 py-2.5 shadow-sm">
-            <span className="font-display text-3xl font-bold tracking-[0.35em] text-primary">
-              {session.code}
-            </span>
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={copyLink}
-              className="h-8 w-8 shrink-0"
-              title="Copy invite link"
-            >
-              <AnimatePresence mode="wait">
-                {copied ? (
-                  <motion.span
-                    key="check"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    exit={{ scale: 0 }}
-                  >
-                    <Check className="h-4 w-4 text-success" />
-                  </motion.span>
-                ) : (
-                  <motion.span
-                    key="copy"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    exit={{ scale: 0 }}
-                  >
-                    <Copy className="h-4 w-4" />
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </Button>
+          {/* Game code + QR for joining */}
+          <div className="mt-3 flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:justify-center sm:gap-6">
+            <JoinQRCode
+              key={session.code}
+              value={typeof window !== "undefined" ? `${window.location.origin}/?code=${session.code}` : ""}
+              label="Scan to join"
+              size={140}
+            />
+            <div className="flex flex-col items-center gap-2">
+              <div className="inline-flex items-center gap-2 rounded-2xl border-2 border-primary/20 bg-card px-4 py-2.5 shadow-sm">
+                <span className="font-display text-2xl font-bold tracking-[0.25em] text-primary sm:text-3xl sm:tracking-[0.35em]">
+                  {session.code}
+                </span>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={copyLink}
+                  className="h-10 w-10 shrink-0 touch-manipulation min-h-[44px] min-w-[44px]"
+                  title="Copy invite link"
+                  aria-label="Copy invite link"
+                >
+                  <AnimatePresence mode="wait">
+                    {copied ? (
+                      <motion.span
+                        key="check"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        exit={{ scale: 0 }}
+                      >
+                        <Check className="h-5 w-5 text-success" />
+                      </motion.span>
+                    ) : (
+                      <motion.span
+                        key="copy"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        exit={{ scale: 0 }}
+                      >
+                        <Copy className="h-5 w-5" />
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Students go to the site and enter this code, or scan the QR
+              </p>
+            </div>
           </div>
-          <p className="mt-1.5 text-xs text-muted-foreground">
-            Students go to the site and enter this code
-          </p>
         </div>
 
         {/* GM Settings */}
@@ -235,7 +247,7 @@ const Lobby = () => {
           <div className="space-y-2">
             <Button
               size="lg"
-              className="w-full gap-2 text-base shadow-lg shadow-primary/20"
+              className="w-full gap-2 text-base shadow-lg shadow-primary/20 min-h-[48px] touch-manipulation"
               disabled={players.length < 1}
               onClick={startGame}
             >
