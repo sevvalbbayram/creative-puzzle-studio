@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { useAnonymousAuth } from "@/hooks/useAnonymousAuth";
 import { useTeacherAuth } from "@/hooks/useTeacherAuth";
 import { useGameSession } from "@/hooks/useGameSession";
-import elephantImg from "@/assets/elephant-puzzle.png";
+import elephantImg from "@/assets/elephant-puzzle-new.png";
 
 const STAGES = [
   { name: "Preparation",  color: "bg-stage-preparation",  emoji: "🔵" },
