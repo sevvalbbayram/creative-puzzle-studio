@@ -1,6 +1,7 @@
-import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { stageColorMap, stageSelectedMap, stageIconMap } from "@/lib/gameData";
 
 interface PieceState {
   id: string;
@@ -19,34 +20,6 @@ interface MobileOptimizedPiecesTrayProps {
   onDragEnd: () => void;
   isMobile?: boolean;
 }
-
-const stageColorMap: Record<string, string> = {
-  preparation:  "border-stage-preparation  bg-stage-preparation/10  hover:bg-stage-preparation/25",
-  incubation:   "border-stage-incubation   bg-stage-incubation/10   hover:bg-stage-incubation/25",
-  illumination: "border-stage-illumination bg-stage-illumination/10 hover:bg-stage-illumination/25",
-  evaluation:   "border-stage-evaluation   bg-stage-evaluation/10   hover:bg-stage-evaluation/25",
-  elaboration:  "border-stage-elaboration  bg-stage-elaboration/10  hover:bg-stage-elaboration/25",
-};
-
-const stageSelectedMap: Record<string, string> = {
-  preparation:  "border-stage-preparation  bg-stage-preparation/25  ring-stage-preparation/40",
-  incubation:   "border-stage-incubation   bg-stage-incubation/25   ring-stage-incubation/40",
-  illumination: "border-stage-illumination bg-stage-illumination/25 ring-stage-illumination/40",
-  evaluation:   "border-stage-evaluation   bg-stage-evaluation/25   ring-stage-evaluation/40",
-  elaboration:  "border-stage-elaboration  bg-stage-elaboration/25  ring-stage-elaboration/40",
-};
-
-const stageIconMap: Record<string, string> = {
-  preparation:  "🔵",
-  incubation:   "🟣",
-  illumination: "🟡",
-  evaluation:   "🔴",
-  elaboration:  "🟢",
-};
-
-// Jigsaw clip path for tray pieces
-const jigsawPiecePath =
-  "polygon(8% 0%, 38% 0%, 40% -5%, 48% -7%, 56% -5%, 58% 0%, 92% 0%, 100% 8%, 105% 40%, 107% 48%, 105% 56%, 100% 58%, 100% 92%, 92% 100%, 58% 100%, 56% 105%, 48% 107%, 40% 105%, 38% 100%, 8% 100%, 0% 92%, -5% 56%, -7% 48%, -5% 40%, 0% 38%, 0% 8%)";
 
 export function MobileOptimizedPiecesTray({
   phase,
@@ -94,14 +67,11 @@ export function MobileOptimizedPiecesTray({
               <div className="mt-2 space-y-1 px-3 md:px-0">
                 <p className="text-[10px] text-muted-foreground sm:text-xs">
                   {phase === 1
-                    ? "Place each stage name in the correct slot on the puzzle."
-                    : "Match each quote to its creativity stage."}
+                    ? "Tap each stage name to place it in the correct slot on the puzzle."
+                    : "Tap each quote to match it to its creativity stage."}
                 </p>
                 <p className="text-[10px] italic text-muted-foreground sm:hidden">
                   Tap a piece, then tap a slot to place it.
-                </p>
-                <p className="text-[10px] italic text-muted-foreground hidden sm:block">
-                  Drag to a slot, or tap to select then tap a slot.
                 </p>
               </div>
             </motion.div>
@@ -109,103 +79,80 @@ export function MobileOptimizedPiecesTray({
         </AnimatePresence>
       </div>
 
-      {/* Piece list */}
-      <AnimatePresence mode="popLayout">
-        {isExpanded && (
+      {/* Pieces grid */}
+      <motion.div
+        initial={isMobile ? { opacity: 0, height: 0 } : {}}
+        animate={isMobile && !isExpanded ? { opacity: 0, height: 0 } : { opacity: 1, height: "auto" }}
+        transition={{ duration: 0.2 }}
+        className="overflow-hidden"
+      >
+        <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-1 lg:grid-cols-2">
+          {unplaced.map((piece) => {
+            const isSelected = selectedPiece === piece.id;
+            const colorClass = stageColorMap[piece.stageId] || stageColorMap.preparation;
+            const selectedClass = stageSelectedMap[piece.stageId] || stageSelectedMap.preparation;
+            const icon = stageIconMap[piece.stageId] || "🧩";
+
+            return (
+              <motion.button
+                key={piece.id}
+                onClick={() => onPieceSelect(piece.id)}
+                onDragStart={() => onDragStart(piece.id)}
+                onDragEnd={onDragEnd}
+                draggable
+                className={`relative p-2 sm:p-3 rounded-lg border-2 transition-all duration-200 cursor-grab active:cursor-grabbing ${
+                  isSelected ? selectedClass : colorClass
+                }`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                layout
+              >
+                {/* Piece content */}
+                <div className="flex flex-col items-center justify-center gap-1 min-h-16 sm:min-h-20">
+                  <span className="text-2xl sm:text-3xl">{icon}</span>
+                  <p className="text-[10px] sm:text-xs font-semibold text-center line-clamp-2">
+                    {piece.label}
+                  </p>
+                </div>
+
+                {/* Selection indicator */}
+                {isSelected && (
+                  <motion.div
+                    layoutId="selected-indicator"
+                    className="absolute inset-0 rounded-lg border-2 border-yellow-400 ring-2 ring-yellow-300"
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                  />
+                )}
+
+                {/* Placed indicator */}
+                {piece.placed && (
+                  <motion.div
+                    className="absolute top-1 right-1 bg-green-500 rounded-full p-1"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                  >
+                    <span className="text-white text-xs">✓</span>
+                  </motion.div>
+                )}
+              </motion.button>
+            );
+          })}
+        </div>
+
+        {/* Empty state */}
+        {unplaced.length === 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="flex flex-wrap gap-2 sm:gap-2.5 md:flex-col md:gap-2 overflow-y-auto md:max-h-[calc(100vh-12rem)] pr-0.5"
+            className="py-8 text-center"
           >
-            {unplaced.map((piece) => {
-              const isSelected = selectedPiece === piece.id;
-              const colorClass = isSelected
-                ? (stageSelectedMap[piece.stageId] ?? "border-primary bg-primary/25 ring-primary/40")
-                : (stageColorMap[piece.stageId] ?? "border-border bg-card");
-              const icon = stageIconMap[piece.stageId] ?? "🧩";
-
-              return (
-                <motion.div
-                  key={piece.id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.75, rotate: -4 }}
-                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                  exit={{ opacity: 0, scale: 0.45, rotate: 6 }}
-                  transition={{ type: "spring", stiffness: 280, damping: 22 }}
-                  draggable
-                  onDragStart={() => onDragStart(piece.id)}
-                  onDragEnd={onDragEnd}
-                  onClick={() => onPieceSelect(piece.id)}
-                  style={{ clipPath: jigsawPiecePath }}
-                  role="button"
-                  tabIndex={0}
-                  aria-pressed={isSelected}
-                  aria-label={`${piece.type === "stage" ? "Stage" : "Quote"} piece: ${piece.label}`}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      onPieceSelect(piece.id);
-                    }
-                  }}
-                  className={[
-                    "puzzle-piece group relative cursor-grab select-none border-2 p-3 px-3.5 text-left shadow-md transition-all",
-                    "active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2",
-                    "sm:p-3.5 sm:px-4 md:p-4",
-                    colorClass,
-                    isSelected ? "ring-2 scale-[1.05] shadow-lg" : "hover:scale-[1.02]",
-                  ].join(" ")}
-                >
-                  {piece.type === "stage" ? (
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-white/30 text-sm shadow-sm"
-                        aria-hidden
-                      >
-                        {icon}
-                      </span>
-                      <span className="font-display text-[12px] font-bold leading-tight text-foreground sm:text-sm">
-                        {piece.label}
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="flex items-start gap-1.5">
-                      <span className="mt-0.5 shrink-0 text-[10px]" aria-hidden>💬</span>
-                      <span className="italic text-[10px] leading-snug text-muted-foreground sm:text-[11px]">
-                        "{piece.label}"
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Selected indicator */}
-                  {isSelected && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[8px] text-white shadow"
-                      aria-hidden
-                    >
-                      ✓
-                    </motion.div>
-                  )}
-                </motion.div>
-              );
-            })}
-
-            {unplaced.length === 0 && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="py-6 text-center text-sm text-muted-foreground w-full"
-              >
-                <span className="text-2xl block mb-1">🎉</span>
-                All pieces placed!
-              </motion.div>
-            )}
+            <p className="text-sm font-semibold text-green-600">
+              ✨ All pieces placed! Great job!
+            </p>
           </motion.div>
         )}
-      </AnimatePresence>
+      </motion.div>
     </aside>
   );
 }

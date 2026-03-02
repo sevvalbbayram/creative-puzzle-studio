@@ -42,26 +42,15 @@ export const CREATIVITY_STAGES_BASE: Omit<CreativityStage, "quote">[] = [
     color: "stage-illumination",
   },
   {
-    id: "evaluation",
-    name: "Evaluation",
+    id: "verification",
+    name: "Verification",
     quotes: [
       "To live a creative life, we must lose our fear of being wrong.",
       "Creativity is 1% inspiration and 99% perspiration.",
       "Great ideas need great execution to become reality.",
       "The difference between a good idea and a great one is ruthless editing.",
     ],
-    color: "stage-evaluation",
-  },
-  {
-    id: "elaboration",
-    name: "Elaboration",
-    quotes: [
-      "The value of an idea lies in the using of it.",
-      "An idea not coupled with action will never get any bigger than the brain cell it occupied.",
-      "Creativity without craft is only half the gift.",
-      "Bringing an idea to life is where imagination meets persistence.",
-    ],
-    color: "stage-elaboration",
+    color: "stage-verification",
   },
 ];
 
@@ -131,9 +120,39 @@ export function calculateScore(
   incorrectAttempts: number
 ): number {
   const config = DIFFICULTY_CONFIG[difficulty] || DIFFICULTY_CONFIG.medium;
-  const base = config.basePoints * 5; // 5 stages + 5 quotes = 10 placements
+  const base = config.basePoints * 4; // 4 stages + 4 quotes = 8 placements
   const timePenalty = Math.floor(elapsedMs / 1000) * 2;
   const accuracyPenalty = incorrectAttempts * 25;
   const raw = Math.max(base - timePenalty - accuracyPenalty, 50);
   return Math.round(raw * config.pointMultiplier);
 }
+
+
+
+export const stageColors: Record<string, { bg: string; border: string; text: string }> = {
+  preparation:  { bg: "bg-stage-preparation",  border: "border-stage-preparation",  text: "text-white" },
+  incubation:   { bg: "bg-stage-incubation",   border: "border-stage-incubation",   text: "text-white" },
+  illumination: { bg: "bg-stage-illumination", border: "border-stage-illumination", text: "text-white" },
+  verification: { bg: "bg-stage-verification", border: "border-stage-verification", text: "text-white" },
+};
+
+export const stageColorMap: Record<string, string> = {
+  preparation:  "border-stage-preparation  bg-stage-preparation/10  hover:bg-stage-preparation/25",
+  incubation:   "border-stage-incubation   bg-stage-incubation/10   hover:bg-stage-incubation/25",
+  illumination: "border-stage-illumination bg-stage-illumination/10 hover:bg-stage-illumination/25",
+  verification: "border-stage-verification   bg-stage-verification/10   hover:bg-stage-verification/25",
+};
+
+export const stageSelectedMap: Record<string, string> = {
+  preparation:  "border-stage-preparation  bg-stage-preparation/25  ring-stage-preparation/40",
+  incubation:   "border-stage-incubation   bg-stage-incubation/25   ring-stage-incubation/40",
+  illumination: "border-stage-illumination bg-stage-illumination/25 ring-stage-illumination/40",
+  verification: "border-stage-verification   bg-stage-verification/25   ring-stage-verification/40",
+};
+
+export const stageIconMap: Record<string, string> = {
+  preparation:  "💡",
+  incubation:   "⏳",
+  illumination: "✨",
+  verification: "✅",
+};
