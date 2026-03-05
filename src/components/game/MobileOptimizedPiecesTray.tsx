@@ -1,3 +1,4 @@
+import type React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
@@ -25,6 +26,115 @@ interface MobileOptimizedPiecesTrayProps {
 // Jigsaw clip path for tray pieces
 const jigsawPiecePath =
   "polygon(8% 0%, 38% 0%, 40% -5%, 48% -7%, 56% -5%, 58% 0%, 92% 0%, 100% 8%, 105% 40%, 107% 48%, 105% 56%, 100% 58%, 100% 92%, 92% 100%, 58% 100%, 56% 105%, 48% 107%, 40% 105%, 38% 100%, 8% 100%, 0% 92%, -5% 56%, -7% 48%, -5% 40%, 0% 38%, 0% 8%)";
+
+interface DraggableTrayItemProps {
+  piece: PieceState;
+  isSelected: boolean;
+  isStage: boolean;
+  onPieceSelect: (id: string) => void;
+  onDragStart: (id: string) => void;
+  onDragEnd: () => void;
+}
+
+function DraggableTrayItem({
+  piece,
+  isSelected,
+  isStage,
+  onPieceSelect,
+  onDragStart,
+  onDragEnd,
+}: DraggableTrayItemProps) {
+  const icon = stageIconMap[piece.stageId] ?? "🧩";
+  const baseColorClass = stageColorMap[piece.stageId] ?? stageColorMap.preparation;
+  const selectedColorClass = stageSelectedMap[piece.stageId] ?? stageSelectedMap.preparation;
+
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: piece.id,
+  });
+
+  const style: React.CSSProperties | undefined = transform
+    ? {
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+        zIndex: isDragging ? 50 : undefined,
+      }
+    : undefined;
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, scale: 0.75, rotate: -4 }}
+      animate={{ opacity: 1, scale: 1, rotate: 0 }}
+      exit={{ opacity: 0, scale: 0.45, rotate: 6 }}
+      transition={{ type: "spring", stiffness: 280, damping: 22 }}
+      ref={setNodeRef}
+      onClick={() => onPieceSelect(piece.id)}
+      style={{ clipPath: jigsawPiecePath, ...style }}
+      {...listeners}
+      {...attributes}
+      role="button"
+      tabIndex={0}
+      aria-pressed={isSelected}
+      aria-label={`${isStage ? "Stage" : "Quote"} piece: ${piece.label}`}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onPieceSelect(piece.id);
+        }
+      }}
+      className={[
+        "puzzle-piece group relative cursor-grab select-none border-2 p-3 px-3.5 text-left transition-all duration-200",
+        "active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2",
+        "sm:p-3.5 sm:px-4 md:p-4",
+        isSelected
+          ? isStage
+            ? `${selectedColorClass} ring-2 scale-[1.05] shadow-lg`
+            : "quote-card-piece-selected"
+          : isStage
+            ? `${baseColorClass} shadow-card hover:shadow-card-hover hover:scale-[1.02]`
+            : "quote-card-piece",
+      ].join(" ")}
+      onPointerDown={() => onDragStart(piece.id)}
+      onPointerUp={onDragEnd}
+    >
+      {isStage ? (
+        <div className="flex items-center gap-2">
+          <span
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-white/40 text-sm shadow-sm"
+            aria-hidden
+          >
+            {icon}
+          </span>
+          <span className="font-display text-[12px] font-bold leading-tight text-foreground sm:text-sm">
+            {piece.label}
+          </span>
+        </div>
+      ) : (
+        <div className="flex items-start gap-1.5">
+          <span className="mt-0.5 shrink-0 text-[11px]" aria-hidden>
+            💬
+          </span>
+          <span className="italic text-[10px] leading-snug text-muted-foreground sm:text-[11px]">
+            "{piece.label}"
+          </span>
+        </div>
+      )}
+
+      {isSelected && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className={[
+            "absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full text-[9px] text-white shadow-sm font-bold",
+            isStage ? "bg-primary" : "bg-accent",
+          ].join(" ")}
+          aria-hidden
+        >
+          ✓
+        </motion.div>
+      )}
+    </motion.div>
+  );
+}
 
 export function MobileOptimizedPiecesTray({
   phase,
@@ -114,96 +224,17 @@ export function MobileOptimizedPiecesTray({
           >
             {unplaced.map((piece) => {
               const isSelected = selectedPiece === piece.id;
-              const icon = stageIconMap[piece.stageId] ?? "🧩";
               const isStage = piece.type === "stage";
-              const baseColorClass = stageColorMap[piece.stageId] ?? stageColorMap.preparation;
-              const selectedColorClass = stageSelectedMap[piece.stageId] ?? stageSelectedMap.preparation;
-
-              const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-                id: piece.id,
-              });
-
-              const style: React.CSSProperties | undefined = transform
-                ? {
-                    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-                    zIndex: isDragging ? 50 : undefined,
-                  }
-                : undefined;
-
               return (
-                <motion.div
+                <DraggableTrayItem
                   key={piece.id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.75, rotate: -4 }}
-                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                  exit={{ opacity: 0, scale: 0.45, rotate: 6 }}
-                  transition={{ type: "spring", stiffness: 280, damping: 22 }}
-                  ref={setNodeRef}
-                  onClick={() => onPieceSelect(piece.id)}
-                  style={{ clipPath: jigsawPiecePath, ...style }}
-                  {...listeners}
-                  {...attributes}
-                  role="button"
-                  tabIndex={0}
-                  aria-pressed={isSelected}
-                  aria-label={`${isStage ? "Stage" : "Quote"} piece: ${piece.label}`}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      onPieceSelect(piece.id);
-                    }
-                  }}
-                  className={[
-                    "puzzle-piece group relative cursor-grab select-none border-2 p-3 px-3.5 text-left transition-all duration-200",
-                    "active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2",
-                    "sm:p-3.5 sm:px-4 md:p-4",
-                    isSelected
-                      ? isStage
-                        ? `${selectedColorClass} ring-2 scale-[1.05] shadow-lg`
-                        : "quote-card-piece-selected"
-                      : isStage
-                        ? `${baseColorClass} shadow-card hover:shadow-card-hover hover:scale-[1.02]`
-                        : "quote-card-piece",
-                  ].join(" ")}
-                >
-                  {isStage ? (
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-white/40 text-sm shadow-sm"
-                        aria-hidden
-                      >
-                        {icon}
-                      </span>
-                      <span className="font-display text-[12px] font-bold leading-tight text-foreground sm:text-sm">
-                        {piece.label}
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="flex items-start gap-1.5">
-                      <span className="mt-0.5 shrink-0 text-[11px]" aria-hidden>
-                        💬
-                      </span>
-                      <span className="italic text-[10px] leading-snug text-muted-foreground sm:text-[11px]">
-                        "{piece.label}"
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Selected indicator badge */}
-                  {isSelected && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className={[
-                        "absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full text-[9px] text-white shadow-sm font-bold",
-                        isStage ? "bg-primary" : "bg-accent",
-                      ].join(" ")}
-                      aria-hidden
-                    >
-                      ✓
-                    </motion.div>
-                  )}
-                </motion.div>
+                  piece={piece}
+                  isSelected={isSelected}
+                  isStage={isStage}
+                  onPieceSelect={onPieceSelect}
+                  onDragStart={onDragStart}
+                  onDragEnd={onDragEnd}
+                />
               );
             })}
 
