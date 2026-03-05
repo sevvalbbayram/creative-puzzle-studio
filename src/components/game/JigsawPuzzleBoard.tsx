@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useDroppable } from "@dnd-kit/core";
 import { motion, AnimatePresence } from "framer-motion";
 import { CreativityStage, stageColors } from "@/lib/gameData";
 import puzzleBgImg from "@/assets/elephant-puzzle-new.png";
@@ -180,12 +181,33 @@ export function JigsawPuzzleBoard({
 
             if (!pos) return null;
 
+            // Droppable ids map 1:1 to slot ids used in puzzlePieces
+            const stageDroppableId = stageSlot?.id;
+            const quoteDroppableId = quoteSlot?.id;
+
+            const {
+              setNodeRef: setStageRef,
+              isOver: isStageOver,
+            } = useDroppable({
+              id: stageDroppableId ?? `${stage.id}-stage-slot`,
+              disabled: !stageSlot,
+            });
+
+            const {
+              setNodeRef: setQuoteRef,
+              isOver: isQuoteOver,
+            } = useDroppable({
+              id: quoteDroppableId ?? `${stage.id}-quote-slot`,
+              disabled: !(phase === 2 && quoteSlot),
+            });
+
             return (
               <div key={stage.id}>
                 {/* ── Stage slot ── */}
                 {stageSlot && (
                   <>
                     <motion.button
+                      ref={setStageRef}
                       type="button"
                       onClick={() => onSlotTap(stageSlot.id, stageSlot.stageId, "stage")}
                       onDragOver={handleDragOver}
@@ -211,6 +233,7 @@ export function JigsawPuzzleBoard({
                           : selectedPiece
                             ? "bg-white/35 text-white animate-pulse jigsaw-empty-active cursor-pointer border-2 border-dashed border-white/60 drop-zone-active"
                             : "bg-black/20 text-white/80 hover:bg-white/25 jigsaw-empty cursor-pointer drop-zone",
+                        isStageOver && !stageSlot.filled ? "drop-zone-valid" : "",
                         feedback?.slotId === stageSlot.id && feedback.type === "correct"
                           ? "animate-glow-correct"
                           : "",
@@ -241,6 +264,7 @@ export function JigsawPuzzleBoard({
                 {phase === 2 && quoteSlot && qPos && (
                   <>
                     <motion.button
+                      ref={setQuoteRef}
                       type="button"
                       onClick={() => onSlotTap(quoteSlot.id, quoteSlot.stageId, "quote")}
                       onDragOver={handleDragOver}
@@ -266,6 +290,7 @@ export function JigsawPuzzleBoard({
                           : selectedPiece
                             ? "bg-white/25 text-white/90 animate-pulse jigsaw-empty-active cursor-pointer border-2 border-dashed border-accent/60 drop-zone-active"
                             : "bg-black/15 text-white/70 hover:bg-white/20 jigsaw-empty cursor-pointer drop-zone",
+                        isQuoteOver && !quoteSlot.filled ? "drop-zone-valid" : "",
                         feedback?.slotId === quoteSlot.id && feedback.type === "correct"
                           ? "animate-glow-correct"
                           : "",

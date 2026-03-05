@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
+import { useDraggable } from "@dnd-kit/core";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { stageColorMap, stageSelectedMap, stageIconMap } from "@/lib/gameData";
 
@@ -118,6 +119,17 @@ export function MobileOptimizedPiecesTray({
               const baseColorClass = stageColorMap[piece.stageId] ?? stageColorMap.preparation;
               const selectedColorClass = stageSelectedMap[piece.stageId] ?? stageSelectedMap.preparation;
 
+              const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+                id: piece.id,
+              });
+
+              const style: React.CSSProperties | undefined = transform
+                ? {
+                    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+                    zIndex: isDragging ? 50 : undefined,
+                  }
+                : undefined;
+
               return (
                 <motion.div
                   key={piece.id}
@@ -126,11 +138,11 @@ export function MobileOptimizedPiecesTray({
                   animate={{ opacity: 1, scale: 1, rotate: 0 }}
                   exit={{ opacity: 0, scale: 0.45, rotate: 6 }}
                   transition={{ type: "spring", stiffness: 280, damping: 22 }}
-                  draggable
-                  onDragStart={() => onDragStart(piece.id)}
-                  onDragEnd={onDragEnd}
+                  ref={setNodeRef}
                   onClick={() => onPieceSelect(piece.id)}
-                  style={{ clipPath: jigsawPiecePath }}
+                  style={{ clipPath: jigsawPiecePath, ...style }}
+                  {...listeners}
+                  {...attributes}
                   role="button"
                   tabIndex={0}
                   aria-pressed={isSelected}

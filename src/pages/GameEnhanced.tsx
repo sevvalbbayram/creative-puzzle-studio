@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useCallback, useRef } from "react";
+import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { Clock, HelpCircle, Zap, BookOpen, Star, MapPin } from "lucide-react";
@@ -19,6 +20,43 @@ import confetti from "canvas-confetti";
 const PHASE_HINTS: Record<1 | 2, string> = {
   1: "Drag or tap each creativity stage name onto its matching puzzle slot.",
   2: "Now match each quote to the stage it describes.",
+};
+
+// Custom collision detection: only treat a droppable as \"hit\" when
+// the draggable's center point is inside the droppable's bounding rect.
+// This mimics a precise snap area around each slot.
+const centerInsideDroppable = ({
+  collisionRect,
+  droppableRects,
+  droppableContainers,
+}: any) => {
+  if (!collisionRect) return [];
+
+  const centerX = collisionRect.left + collisionRect.width / 2;
+  const centerY = collisionRect.top + collisionRect.height / 2;
+
+  const collisions = [];
+
+  for (const droppableContainer of droppableContainers) {
+    const { id } = droppableContainer;
+    const rect = droppableRects.get(id);
+    if (!rect) continue;
+
+    const isInside =
+      centerX >= rect.left &&
+      centerX <= rect.right &&
+      centerY >= rect.top &&
+      centerY <= rect.bottom;
+
+    if (isInside) {
+      collisions.push({
+        id,
+        data: { droppableContainer, value: 1 },
+      });
+    }
+  }
+
+  return collisions;
 };
 
 interface PieceState {
@@ -284,19 +322,46 @@ const GameEnhanced = () => {
     setSelectedPiece((prev) => (prev === pieceId ? null : pieceId));
   }, []);
 
-  const handleDragStart = useCallback((pieceId: string) => {
-    setSelectedPiece(pieceId);
-  }, []);
+  const handleDragEndDnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!active || !over) return;
 
-  const handleDragEnd = useCallback(() => {
-    // Don't clear on drag end — the drop handler will clear it
-  }, []);
+      const pieceId = String(active.id);
+      const slotId = String(over.id);
 
-  const handleDrop = useCallback(
-    (slotId: string, slotStageId: string, slotType: "stage" | "quote") => {
-      handleSlotTap(slotId, slotStageId, slotType);
+      const piece = pieces.find((p) => p.id === pieceId);
+      const slot = puzzlePieces.find((s) => s.id === slotId);
+      if (!piece || !slot) return;
+
+      const slotStageId = slot.stageId;
+      const slotType = slot.type;
+
+      // Mirror tap-to-place behavior but driven by drag
+      if (piece.stageId === slotStageId && piece.type === slotType) {
+        const newStreak = comboStreak + 1;
+        setComboStreak(newStreak);
+        const xpGained = 20 + (newStreak >= 2 ? 5 * (newStreak - 1) : 0);
+        setXp((prev) => prev + xpGained);
+        playCorrectSound();
+        confetti({ particleCount: 40 + newStreak * 10, spread: 50 + newStreak * 5, origin: { y: 0.6 } });
+        setFeedback({ type: "correct", slotId });
+        setPieces((prev) => prev.map((p) => (p.id === piece.id ? { ...p, placed: true } : p)));
+        setPuzzlePieces((prev) => prev.map((s) => (s.id === slotId ? { ...s, filled: true } : s)));
+        if (newStreak >= 2) {
+          setShowCombo(true);
+          setTimeout(() => setShowCombo(false), 1200);
+        }
+        setTimeout(() => setFeedback(null), 800);
+      } else {
+        playIncorrectSound();
+        setFeedback({ type: "incorrect", slotId });
+        setIncorrectAttempts((prev) => prev + 1);
+        setComboStreak(0);
+        setTimeout(() => setFeedback(null), 500);
+      }
     },
-    [handleSlotTap]
+    [pieces, puzzlePieces, comboStreak]
   );
 
   const totalPieces = 10;
@@ -436,79 +501,84 @@ const GameEnhanced = () => {
         </div>
       </header>
 
-      {/* Main content */}
-      <main className="relative z-10 flex-1 px-4 py-4 sm:px-6 sm:py-6">
-        <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 max-w-7xl mx-auto">
+      {/* Main content with drag-and-drop context */}
+      <DndContext onDragEnd={handleDragEndDnd} collisionDetection={centerInsideDroppable}>
+        <main className="relative z-10 flex-1 px-4 py-4 sm:px-6 sm:py-6">
+          <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 max-w-7xl mx-auto">
+            
+            {/* Puzzle board */}
+            <div className="flex-1 flex flex-col items-center">
+              <JigsawPuzzleBoard
+                phase={phase}
+                stages={stages}
+                pieces={puzzlePieces}
+                feedback={feedback}
+                onSlotTap={handleSlotTap}
+                onDrop={() => {
+                  /* dnd-kit handles drop; keep prop for backwards compatibility */
+                }}
+                selectedPiece={selectedPiece}
+                completed={completed}
+                placedCount={phasePlaced}
+              />
+            </div>
 
-          {/* Puzzle board */}
-          <div className="flex-1 flex flex-col items-center">
-            <JigsawPuzzleBoard
-              phase={phase}
-              stages={stages}
-              pieces={puzzlePieces}
-              feedback={feedback}
-              onSlotTap={handleSlotTap}
-              onDrop={handleDrop}
-              selectedPiece={selectedPiece}
-              completed={completed}
-              placedCount={phasePlaced}
-            />
-          </div>
+            {/* Right sidebar: pieces tray + quote collection */}
+            <div className="w-full lg:w-80 flex flex-col gap-4">
+              <MobileOptimizedPiecesTray
+                phase={phase}
+                pieces={pieces}
+                selectedPiece={selectedPiece}
+                onPieceSelect={handlePieceSelect}
+                // onDragStart/onDragEnd kept for API compatibility but unused now
+                onDragStart={() => {}}
+                onDragEnd={() => {}}
+                isMobile={isMobile}
+              />
 
-          {/* Right sidebar: pieces tray + quote collection */}
-          <div className="w-full lg:w-80 flex flex-col gap-4">
-            <MobileOptimizedPiecesTray
-              phase={phase}
-              pieces={pieces}
-              selectedPiece={selectedPiece}
-              onPieceSelect={handlePieceSelect}
-              onDragStart={handleDragStart}
-              onDragEnd={handleDragEnd}
-              isMobile={isMobile}
-            />
-
-            {/* Collected quotes panel (desktop inline, mobile slide) */}
-            <AnimatePresence>
-              {(showQuotePanel || (!isMobile && collectedQuotes.length > 0)) && (
-                <motion.div
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 12 }}
-                  className="rounded-xl border border-explorer-gold/30 bg-explorer-light/80 backdrop-blur-sm p-3 shadow-card"
-                >
-                  <h4 className="flex items-center gap-2 font-display text-sm font-bold mb-2 text-explorer-dark">
-                    <BookOpen className="h-4 w-4 text-explorer-gold" />
-                    Collected Quotes
-                    <span className="ml-auto rounded-full bg-explorer-gold/20 px-2 py-0.5 text-[10px] font-semibold text-explorer-dark">
-                      {collectedQuotes.length}/{stages.length}
-                    </span>
-                  </h4>
-                  <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-0.5">
-                    {collectedQuotes.map((s) => (
-                      <motion.div
-                        key={s.id}
-                        initial={{ opacity: 0, x: -8 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="collected-quote"
-                      >
-                        <p className="italic text-[10px] sm:text-[11px] leading-snug text-muted-foreground mb-1">
-                          "{s.quote}"
-                        </p>
-                        <span
-                          className="inline-flex items-center gap-1 text-[9px] font-semibold rounded-full px-2 py-0.5"
-                          style={{ background: `hsl(var(--stage-${s.id}) / 0.15)`, color: `hsl(var(--stage-${s.id}))` }}
+              {/* Collected quotes panel (desktop inline, mobile slide) */}
+              <AnimatePresence>
+                {(showQuotePanel || (!isMobile && collectedQuotes.length > 0)) && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 12 }}
+                    className="rounded-xl border border-explorer-gold/30 bg-explorer-light/80 backdrop-blur-sm p-3 shadow-card"
+                  >
+                    <h4 className="flex items-center gap-2 font-display text-sm font-bold mb-2 text-explorer-dark">
+                      <BookOpen className="h-4 w-4 text-explorer-gold" />
+                      Collected Quotes
+                      <span className="ml-auto rounded-full bg-explorer-gold/20 px-2 py-0.5 text-[10px] font-semibold text-explorer-dark">
+                        {collectedQuotes.length}/{stages.length}
+                      </span>
+                    </h4>
+                    <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-0.5">
+                      {collectedQuotes.map((s) => (
+                        <motion.div
+                          key={s.id}
+                          initial={{ opacity: 0, x: -8 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          className="collected-quote"
                         >
-                          {s.emoji} {s.name}
-                        </span>
-                      </motion.div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                          <p className="italic text-[10px] sm:text-[11px] leading-snug text-muted-foreground mb-1">
+                            "{s.quote}"
+                          </p>
+                          <span
+                            className="inline-flex items-center gap-1 text-[9px] font-semibold rounded-full px-2 py-0.5"
+                            style={{ background: `hsl(var(--stage-${s.id}) / 0.15)`, color: `hsl(var(--stage-${s.id}))` }}
+                          >
+                            {s.emoji} {s.name}
+                          </span>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </DndContext>
 
       {/* Toasts */}
       <AnimatePresence>
