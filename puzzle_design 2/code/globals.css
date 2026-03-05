@@ -1,0 +1,444 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CSS Variables for Theme */
+:root {
+  /* Global Colors */
+  --color-brand-purple: #9333EA;
+  --color-brand-orange: #F97316;
+  --color-background: #F5F5F7;
+  
+  /* Observatory Colors */
+  --color-observatory-space: #1E3A8A;
+  --color-observatory-gold: #FCD34D;
+  --color-observatory-cosmic: #7C3AED;
+  --color-observatory-nebula: #EC4899;
+  
+  /* Alchemist Colors */
+  --color-alchemist-purple: #6B21A8;
+  --color-alchemist-green: #059669;
+  --color-alchemist-gold: #D97706;
+  --color-alchemist-blue: #0EA5E9;
+  
+  /* Gardener Colors */
+  --color-gardener-brown: #92400E;
+  --color-gardener-green: #16A34A;
+  --color-gardener-pink: #F472B6;
+  --color-gardener-sky: #38BDF8;
+  
+  /* Explorer Colors */
+  --color-explorer-parchment: #FEF3C7;
+  --color-explorer-gold: #CA8A04;
+  --color-explorer-ocean: #0284C7;
+  --color-explorer-forest: #15803D;
+}
+
+/* Base Styles */
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-text-primary;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-bold;
+  }
+}
+
+/* Component Styles */
+@layer components {
+  /* Button Styles */
+  .btn-primary {
+    @apply bg-brand-purple hover:bg-brand-purple-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300;
+  }
+  
+  .btn-secondary {
+    @apply border-2 border-brand-orange text-brand-orange hover:bg-brand-orange hover:text-white font-medium py-2 px-5 rounded-lg transition-all duration-300;
+  }
+  
+  .btn-disabled {
+    @apply bg-gray-300 text-gray-500 cursor-not-allowed opacity-50;
+  }
+  
+  /* Card Styles */
+  .card {
+    @apply bg-white rounded-xl shadow-card p-6 border-2 border-transparent hover:border-brand-purple transition-all duration-300;
+  }
+  
+  .card-interactive {
+    @apply card cursor-pointer hover:shadow-card-hover transform hover:-translate-y-1;
+  }
+  
+  .card-world-portal {
+    @apply relative group cursor-pointer;
+  }
+  
+  /* Quote Card */
+  .quote-card {
+    @apply bg-white rounded-lg shadow-md p-4 border-2 border-brand-purple-200 hover:border-brand-purple transition-all duration-300;
+  }
+  
+  .quote-card-draggable {
+    @apply quote-card cursor-move hover:shadow-lg active:cursor-grabbing;
+  }
+  
+  /* Progress Indicators */
+  .progress-bar {
+    @apply w-full bg-gray-200 rounded-full h-3 overflow-hidden;
+  }
+  
+  .progress-fill {
+    @apply h-full bg-gradient-to-r from-brand-purple via-brand-orange to-status-success transition-all duration-500;
+  }
+  
+  .phase-indicator {
+    @apply flex items-center justify-center space-x-4;
+  }
+  
+  .phase-step {
+    @apply w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all duration-300;
+  }
+  
+  .phase-step-active {
+    @apply bg-brand-orange text-white ring-4 ring-brand-orange ring-opacity-50;
+  }
+  
+  .phase-step-completed {
+    @apply bg-status-success text-white;
+  }
+  
+  .phase-step-inactive {
+    @apply bg-gray-300 text-gray-600;
+  }
+  
+  /* World-Specific Backgrounds */
+  .bg-observatory {
+    @apply bg-gradient-to-b from-observatory-space to-gray-900;
+  }
+  
+  .bg-alchemist {
+    @apply bg-gradient-to-b from-alchemist-purple to-gray-900;
+  }
+  
+  .bg-gardener {
+    @apply bg-gradient-to-b from-gardener-sky to-gardener-green;
+  }
+  
+  .bg-explorer {
+    @apply bg-gradient-to-br from-explorer-parchment to-explorer-parchment-dark;
+  }
+  
+  /* Glow Effects */
+  .glow-purple {
+    @apply shadow-glow-purple;
+  }
+  
+  .glow-orange {
+    @apply shadow-glow-orange;
+  }
+  
+  .glow-green {
+    @apply shadow-glow-green;
+  }
+  
+  .glow-gold {
+    @apply shadow-glow-gold;
+  }
+  
+  /* Glassmorphism */
+  .glass {
+    @apply bg-white bg-opacity-10 backdrop-blur-md border border-white border-opacity-20;
+  }
+  
+  .glass-dark {
+    @apply bg-black bg-opacity-20 backdrop-blur-md border border-white border-opacity-10;
+  }
+  
+  /* Portal Glow Effect */
+  .portal-glow {
+    @apply absolute inset-0 bg-gradient-to-r from-brand-purple to-observatory-nebula rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-300;
+  }
+  
+  /* Achievement Badge */
+  .achievement-badge {
+    @apply w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center shadow-lg relative group;
+  }
+  
+  /* Puzzle Elements */
+  .puzzle-piece {
+    @apply cursor-pointer transition-all duration-300 hover:scale-110;
+  }
+  
+  .puzzle-piece-dragging {
+    @apply opacity-50 cursor-grabbing;
+  }
+  
+  .drop-zone {
+    @apply border-2 border-dashed border-gray-300 rounded-lg p-4 transition-all duration-300;
+  }
+  
+  .drop-zone-active {
+    @apply border-brand-purple bg-brand-purple bg-opacity-10;
+  }
+  
+  .drop-zone-valid {
+    @apply border-status-success bg-status-success bg-opacity-10;
+  }
+  
+  /* Crystal/Element Styles */
+  .crystal {
+    @apply rounded-lg p-4 shadow-lg cursor-pointer transition-all duration-300 hover:scale-105;
+  }
+  
+  .crystal-purple {
+    @apply bg-gradient-to-br from-alchemist-purple-light to-alchemist-purple shadow-glow-purple;
+  }
+  
+  .crystal-blue {
+    @apply bg-gradient-to-br from-alchemist-blue-light to-alchemist-blue shadow-glow-blue;
+  }
+  
+  .crystal-green {
+    @apply bg-gradient-to-br from-alchemist-green-light to-alchemist-green shadow-glow-green;
+  }
+  
+  .crystal-gold {
+    @apply bg-gradient-to-br from-alchemist-gold-light to-alchemist-gold shadow-glow-gold;
+  }
+  
+  /* Seed/Plant Styles */
+  .seed-card {
+    @apply bg-gardener-brown-light rounded-lg p-3 shadow-md cursor-pointer hover:shadow-lg transition-all duration-300;
+  }
+  
+  .flower-bloom {
+    @apply animate-scale-in;
+  }
+  
+  /* Map Styles */
+  .map-fragment {
+    @apply bg-explorer-parchment border-2 border-explorer-ink-light rounded cursor-pointer hover:shadow-lg transition-all duration-300;
+  }
+  
+  .fog-overlay {
+    @apply absolute inset-0 bg-gray-500 bg-opacity-70 backdrop-blur-sm transition-opacity duration-500;
+  }
+  
+  /* Navigation */
+  .nav-link {
+    @apply text-text-secondary hover:text-brand-purple transition-colors duration-300;
+  }
+  
+  .nav-link-active {
+    @apply text-brand-purple font-semibold;
+  }
+  
+  /* Modal/Dialog */
+  .modal-overlay {
+    @apply fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center;
+  }
+  
+  .modal-content {
+    @apply bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full mx-4 animate-scale-in;
+  }
+  
+  /* Tooltip */
+  .tooltip {
+    @apply absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none;
+  }
+  
+  /* Loading Spinner */
+  .spinner {
+    @apply animate-spin rounded-full border-4 border-gray-200 border-t-brand-purple;
+  }
+}
+
+/* Utility Classes */
+@layer utilities {
+  /* Text Gradients */
+  .text-gradient-purple-orange {
+    @apply bg-gradient-to-r from-brand-purple to-brand-orange bg-clip-text text-transparent;
+  }
+  
+  .text-gradient-observatory {
+    @apply bg-gradient-to-r from-observatory-cosmic to-observatory-nebula bg-clip-text text-transparent;
+  }
+  
+  /* Animations */
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+  
+  .animate-rotate-slow {
+    animation: rotate-slow 20s linear infinite;
+  }
+  
+  /* Hover Effects */
+  .hover-lift {
+    @apply transition-transform duration-300 hover:-translate-y-2;
+  }
+  
+  .hover-glow {
+    @apply transition-shadow duration-300 hover:shadow-glow-purple;
+  }
+  
+  /* Responsive Text Sizes */
+  .text-responsive-xs {
+    @apply text-xs md:text-sm;
+  }
+  
+  .text-responsive-sm {
+    @apply text-sm md:text-base;
+  }
+  
+  .text-responsive-base {
+    @apply text-base md:text-lg;
+  }
+  
+  .text-responsive-lg {
+    @apply text-lg md:text-xl;
+  }
+  
+  .text-responsive-xl {
+    @apply text-xl md:text-2xl;
+  }
+  
+  .text-responsive-2xl {
+    @apply text-2xl md:text-3xl;
+  }
+  
+  .text-responsive-3xl {
+    @apply text-3xl md:text-4xl lg:text-5xl;
+  }
+  
+  /* Touch Targets */
+  .touch-target {
+    @apply min-w-[44px] min-h-[44px];
+  }
+  
+  /* Safe Areas */
+  .safe-top {
+    @apply pt-safe;
+  }
+  
+  .safe-bottom {
+    @apply pb-safe;
+  }
+}
+
+/* Particle Effects */
+@keyframes particle-float {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100px) translateX(20px);
+    opacity: 0;
+  }
+}
+
+.particle {
+  animation: particle-float 2s ease-out forwards;
+}
+
+/* Starfield Animation */
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.star {
+  animation: twinkle 3s ease-in-out infinite;
+}
+
+/* Success Celebration */
+@keyframes confetti {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+.confetti {
+  animation: confetti 3s ease-out forwards;
+}
+
+/* Responsive Utilities */
+@media (max-width: 767px) {
+  .mobile-stack {
+    @apply flex-col space-y-4;
+  }
+  
+  .mobile-full {
+    @apply w-full;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .tablet-grid {
+    @apply grid grid-cols-2 gap-4;
+  }
+}
+
+@media (min-width: 1024px) {
+  .desktop-grid {
+    @apply grid grid-cols-3 gap-6;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Accessibility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Focus Styles */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-brand-purple focus:ring-offset-2;
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

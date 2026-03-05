@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, HelpCircle, Users, Zap } from "lucide-react";
+import { Clock, HelpCircle, Zap, BookOpen, Star, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useAnonymousAuth } from "@/hooks/useAnonymousAuth";
@@ -15,6 +15,11 @@ import { CompletionOverlay } from "@/components/game/CompletionOverlay";
 import { InstructionsModal } from "@/components/InstructionsModal";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import confetti from "canvas-confetti";
+
+const PHASE_HINTS: Record<1 | 2, string> = {
+  1: "Drag or tap each creativity stage name onto its matching puzzle slot.",
+  2: "Now match each quote to the stage it describes.",
+};
 
 interface PieceState {
   id: string;
@@ -68,6 +73,9 @@ const GameEnhanced = () => {
   const [showCombo, setShowCombo] = useState(false);
   const [broadcastToast, setBroadcastToast] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [showQuotePanel, setShowQuotePanel] = useState(false);
+  // XP: 20 per correct placement, 5 bonus per combo ≥2
+  const [xp, setXp] = useState(0);
   const halfwayTriggered = useRef(false);
   const startTimeRef = useRef<number>(Date.now());
   const timerRef = useRef<ReturnType<typeof setInterval>>();
@@ -247,6 +255,8 @@ const GameEnhanced = () => {
         // Correct!
         const newStreak = comboStreak + 1;
         setComboStreak(newStreak);
+        const xpGained = 20 + (newStreak >= 2 ? 5 * (newStreak - 1) : 0);
+        setXp((prev) => prev + xpGained);
         playCorrectSound();
         confetti({ particleCount: 40 + newStreak * 10, spread: 50 + newStreak * 5, origin: { y: 0.6 } });
         setFeedback({ type: "correct", slotId });
@@ -290,9 +300,17 @@ const GameEnhanced = () => {
   );
 
   const totalPieces = 10;
+  const phasePlaced = pieces.filter((p) => p.placed && p.type === (phase === 1 ? "stage" : "quote")).length;
   const actualPlaced = phase === 1
     ? pieces.filter((p) => p.placed).length
     : 5 + pieces.filter((p) => p.placed).length;
+
+  // Quotes collected so far (placed quote pieces)
+  const collectedQuotes = stages.filter((s) =>
+    pieces.some((p) => p.stageId === s.id && p.type === "quote" && p.placed)
+  );
+  const xpLevel = Math.floor(xp / 100) + 1;
+  const xpProgress = (xp % 100) / 100;
 
   const formatTime = (ms: number) => {
     const s = Math.floor(ms / 1000);
@@ -311,33 +329,56 @@ const GameEnhanced = () => {
   }
 
   return (
-    <div className="relative min-h-screen w-full bg-gradient-to-br from-background via-background to-primary/5 overflow-hidden">
-      {/* Background effects */}
+    <div className="relative min-h-screen w-full bg-explorer overflow-hidden">
+      {/* Ambient background blobs */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl opacity-20" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl opacity-20" />
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-explorer-gold/10 rounded-full blur-3xl opacity-30" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-explorer-ocean/10 rounded-full blur-3xl opacity-30" />
+        <div className="absolute top-1/2 left-0 w-64 h-64 bg-brand-purple/5 rounded-full blur-3xl opacity-20" />
       </div>
 
       {/* Header */}
-      <header className="relative z-10 border-b border-primary/10 bg-background/80 backdrop-blur-sm">
+      <header className="relative z-10 border-b border-explorer-gold/20 bg-background/85 backdrop-blur-md">
         <div className="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
-          <div className="flex items-center gap-2 sm:gap-4">
+          {/* Left: title + phase hint */}
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-explorer-gold/20 text-xl shadow-sm">
+              🗺️
+            </div>
             <div className="flex flex-col gap-0.5">
-              <h1 className="font-display text-lg sm:text-xl font-bold">🧩 Puzzle Game</h1>
+              <h1 className="font-display text-base sm:text-lg font-bold leading-tight">
+                Puzzle of Inspiration
+              </h1>
               <p className="text-[10px] sm:text-xs text-muted-foreground">
-                {phase === 1 ? "Phase 1: Stage Names" : "Phase 2: Quotes"}
+                {PHASE_HINTS[phase]}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-4">
+          {/* Right: controls */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* XP badge */}
+            <div className="hidden sm:flex flex-col items-center gap-0.5">
+              <div className="flex items-center gap-1 text-[10px] font-semibold text-brand-purple-600">
+                <Star className="h-3 w-3" />
+                Lv.{xpLevel} · {xp} XP
+              </div>
+              <div className="xp-bar w-16">
+                <motion.div
+                  className="xp-fill"
+                  animate={{ width: `${xpProgress * 100}%` }}
+                  transition={{ duration: 0.5 }}
+                />
+              </div>
+            </div>
+
             {/* Timer */}
             {timeRemaining !== null && (
               <motion.div
                 animate={isTimeLow ? { scale: [1, 1.05, 1] } : {}}
                 transition={isTimeLow ? { repeat: Infinity, duration: 1 } : {}}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold text-sm ${
-                  isTimeLow ? "bg-destructive/20 text-destructive" : "bg-primary/10 text-primary"
+                  isTimeLow ? "bg-destructive/20 text-destructive" : "bg-explorer-gold/15 text-explorer-dark"
                 }`}
               >
                 <Clock className="h-4 w-4" />
@@ -346,12 +387,28 @@ const GameEnhanced = () => {
               </motion.div>
             )}
 
-            {/* Progress */}
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10">
-              <span className="text-xs font-semibold text-primary">{actualPlaced}/{totalPieces}</span>
+            {/* Progress pill */}
+            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-explorer-gold/15">
+              <MapPin className="h-3.5 w-3.5 text-explorer-gold" />
+              <span className="text-xs font-semibold text-explorer-dark">{actualPlaced}/{totalPieces}</span>
             </div>
 
-            {/* Controls */}
+            {/* Quote collection toggle */}
+            {collectedQuotes.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowQuotePanel(!showQuotePanel)}
+                className="gap-1.5 relative"
+              >
+                <BookOpen className="h-4 w-4" />
+                <span className="hidden sm:inline text-xs">Quotes</span>
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-brand-purple text-[8px] text-white font-bold">
+                  {collectedQuotes.length}
+                </span>
+              </Button>
+            )}
+
             <Button
               variant="ghost"
               size="sm"
@@ -369,8 +426,11 @@ const GameEnhanced = () => {
         {/* Mobile progress bar */}
         <div className="sm:hidden px-4 pb-3">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-xs font-semibold text-muted-foreground">Progress</span>
-            <span className="text-xs font-bold text-primary">{actualPlaced}/{totalPieces}</span>
+            <div className="flex items-center gap-1 text-[10px] font-semibold text-muted-foreground">
+              <Star className="h-3 w-3 text-brand-purple" />
+              {xp} XP · Lv.{xpLevel}
+            </div>
+            <span className="text-xs font-bold text-explorer-gold">{actualPlaced}/{totalPieces}</span>
           </div>
           <Progress value={(actualPlaced / totalPieces) * 100} className="h-2" />
         </div>
@@ -379,6 +439,7 @@ const GameEnhanced = () => {
       {/* Main content */}
       <main className="relative z-10 flex-1 px-4 py-4 sm:px-6 sm:py-6">
         <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 max-w-7xl mx-auto">
+
           {/* Puzzle board */}
           <div className="flex-1 flex flex-col items-center">
             <JigsawPuzzleBoard
@@ -390,11 +451,12 @@ const GameEnhanced = () => {
               onDrop={handleDrop}
               selectedPiece={selectedPiece}
               completed={completed}
+              placedCount={phasePlaced}
             />
           </div>
 
-          {/* Pieces tray */}
-          <div className="w-full lg:w-80">
+          {/* Right sidebar: pieces tray + quote collection */}
+          <div className="w-full lg:w-80 flex flex-col gap-4">
             <MobileOptimizedPiecesTray
               phase={phase}
               pieces={pieces}
@@ -404,6 +466,46 @@ const GameEnhanced = () => {
               onDragEnd={handleDragEnd}
               isMobile={isMobile}
             />
+
+            {/* Collected quotes panel (desktop inline, mobile slide) */}
+            <AnimatePresence>
+              {(showQuotePanel || (!isMobile && collectedQuotes.length > 0)) && (
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 12 }}
+                  className="rounded-xl border border-explorer-gold/30 bg-explorer-light/80 backdrop-blur-sm p-3 shadow-card"
+                >
+                  <h4 className="flex items-center gap-2 font-display text-sm font-bold mb-2 text-explorer-dark">
+                    <BookOpen className="h-4 w-4 text-explorer-gold" />
+                    Collected Quotes
+                    <span className="ml-auto rounded-full bg-explorer-gold/20 px-2 py-0.5 text-[10px] font-semibold text-explorer-dark">
+                      {collectedQuotes.length}/{stages.length}
+                    </span>
+                  </h4>
+                  <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-0.5">
+                    {collectedQuotes.map((s) => (
+                      <motion.div
+                        key={s.id}
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="collected-quote"
+                      >
+                        <p className="italic text-[10px] sm:text-[11px] leading-snug text-muted-foreground mb-1">
+                          "{s.quote}"
+                        </p>
+                        <span
+                          className="inline-flex items-center gap-1 text-[9px] font-semibold rounded-full px-2 py-0.5"
+                          style={{ background: `hsl(var(--stage-${s.id}) / 0.15)`, color: `hsl(var(--stage-${s.id}))` }}
+                        >
+                          {s.emoji} {s.name}
+                        </span>
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </main>
@@ -415,7 +517,7 @@ const GameEnhanced = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-primary text-primary-foreground px-4 py-3 rounded-lg shadow-lg font-semibold"
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 glass px-5 py-3 rounded-xl shadow-glow-gold font-semibold text-sm"
           >
             🎯 Halfway there! Keep going!
           </motion.div>
@@ -423,14 +525,14 @@ const GameEnhanced = () => {
 
         {showCombo && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
+            initial={{ opacity: 0, scale: 0.7 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50"
+            exit={{ opacity: 0, scale: 0.7 }}
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none"
           >
-            <div className="flex items-center gap-2 bg-gradient-to-r from-primary to-purple-500 text-white px-6 py-3 rounded-full shadow-xl font-display text-lg font-bold">
+            <div className="flex items-center gap-2 bg-gradient-to-r from-brand-purple to-brand-orange text-white px-6 py-3 rounded-full shadow-glow-purple font-display text-lg font-bold">
               <Zap className="h-5 w-5" />
-              {comboStreak}x Combo!
+              {comboStreak}× Combo! +{5 * (comboStreak - 1)} XP
             </div>
           </motion.div>
         )}
@@ -440,9 +542,34 @@ const GameEnhanced = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 z-50 bg-secondary text-secondary-foreground px-4 py-3 rounded-lg shadow-lg max-w-sm"
+            className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 z-50 glass-dark text-white px-4 py-3 rounded-xl shadow-lg max-w-sm text-sm"
           >
             📢 {broadcastToast}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Phase transition overlay */}
+      <AnimatePresence>
+        {phaseTransition && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.7, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 100, damping: 15 }}
+              className="text-center px-8 py-6 rounded-2xl glass shadow-glow-gold"
+            >
+              <div className="text-5xl mb-3 animate-float">🧭</div>
+              <p className="font-display text-2xl font-bold text-white drop-shadow-lg mb-1">
+                Phase 1 Complete!
+              </p>
+              <p className="text-white/80 text-sm">Now match each quote…</p>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
