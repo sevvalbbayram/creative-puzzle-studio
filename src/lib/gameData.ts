@@ -62,6 +62,47 @@ export function getRandomizedStages(): CreativityStage[] {
   }));
 }
 
+/**
+ * Build a flat array of statements (one per grid cell) for the jigsaw puzzle.
+ * Divides the grid into 4 regions (quadrants), randomly assigns each region a creativity stage,
+ * and assigns each cell either the stage name or quote. Ensures randomized layout per game.
+ */
+export function getStatementsForGrid(
+  rows: number,
+  cols: number,
+  stages: CreativityStage[],
+): string[] {
+  const total = rows * cols;
+  const out: string[] = new Array(total);
+
+  // Region index: 0 = top-left, 1 = top-right, 2 = bottom-left, 3 = bottom-right
+  const getRegion = (r: number, c: number) => {
+    const rMid = rows / 2;
+    const cMid = cols / 2;
+    const top = r < rMid ? 0 : 2;
+    const left = c < cMid ? 0 : 1;
+    return top + left;
+  };
+
+  // Shuffle stage indices so each region gets a random stage (randomized layout)
+  const indices = [0, 1, 2, 3];
+  for (let i = indices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const region = getRegion(r, c);
+      const stage = stages[indices[region]];
+      const useQuote = Math.random() < 0.5;
+      out[r * cols + c] = useQuote ? stage.quote : stage.name;
+    }
+  }
+
+  return out;
+}
+
 // Default export for backward compat — randomized once on import
 export const CREATIVITY_STAGES: CreativityStage[] = getRandomizedStages();
 

@@ -378,6 +378,13 @@ html {
   -webkit-touch-callout: none;
 }
 
+/* Statement/detail text bar on each puzzle piece (tray + board) */
+.jigsaw-piece-statement {
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.5));
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
 /* Tray grid: horizontal scrollable on small screens */
 @media (max-width: 639px) {
   .jigsaw-tray-grid {

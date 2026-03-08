@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useAnonymousAuth } from "@/hooks/useAnonymousAuth";
 import { useGameSession } from "@/hooks/useGameSession";
-import { DIFFICULTY_CONFIG, calculateJigsawScore } from "@/lib/gameData";
+import { DIFFICULTY_CONFIG, calculateJigsawScore, getRandomizedStages } from "@/lib/gameData";
 import { playCorrectSound, playIncorrectSound, playCelebrationSound } from "@/lib/audioFeedback";
 import { JigsawImagePuzzle, getGridConfig } from "@/components/game/JigsawImagePuzzle";
 import { CompletionOverlay } from "@/components/game/CompletionOverlay";
@@ -41,6 +41,9 @@ const GameEnhanced = () => {
   const config = DIFFICULTY_CONFIG[difficulty] || DIFFICULTY_CONFIG.medium;
   const gridConfig = getGridConfig(difficulty);
   const totalPieces = gridConfig.cols * gridConfig.rows;
+
+  /** Randomized stages per game — drives statement layout on puzzle pieces */
+  const [stages] = useState(() => getRandomizedStages());
 
   const isPaused = !!session?.paused_at;
   const pausedAccumulatedRef = useRef(0);
@@ -125,6 +128,11 @@ const GameEnhanced = () => {
     playIncorrectSound();
     setIncorrectAttempts(prev => prev + 1);
     setComboStreak(0);
+  }, []);
+
+  const handlePhaseComplete = useCallback(() => {
+    playCorrectSound();
+    confetti({ particleCount: 80, spread: 70, origin: { y: 0.5 } });
   }, []);
 
   const handleCompleted = useCallback(() => {
@@ -249,9 +257,11 @@ const GameEnhanced = () => {
       <main className="relative z-10 px-3 py-3 sm:px-6 sm:py-5">
         <JigsawImagePuzzle
           difficulty={difficulty}
+          stages={stages}
           onPiecePlaced={handlePiecePlaced}
           onIncorrect={handleIncorrect}
           onCompleted={handleCompleted}
+          onPhaseComplete={handlePhaseComplete}
           isPaused={isPaused}
         />
       </main>

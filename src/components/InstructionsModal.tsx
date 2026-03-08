@@ -48,7 +48,7 @@ export function InstructionsModal({ open: externalOpen, onOpenChange }: Instruct
             How to Play
           </DialogTitle>
           <DialogDescription>
-            Reassemble the elephant jigsaw puzzle!
+            Place the four main keys first, then match each quote to its key. Two phases, one puzzle.
           </DialogDescription>
         </DialogHeader>
 
@@ -57,10 +57,10 @@ export function InstructionsModal({ open: externalOpen, onOpenChange }: Instruct
             <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-sm">1</div>
             <div>
               <h4 className="font-semibold text-sm sm:text-base flex items-center gap-1">
-                <Smartphone className="h-4 w-4" /> Select a Piece
+                <Target className="h-4 w-4" /> Phase 1: Main keys
               </h4>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                Tap any puzzle piece from the tray below (or beside) the board. It will glow gold when selected.
+                Place the four main keys in the <strong>top row</strong>: Preparation, Incubation, Illumination, Verification. Tap a key piece, then tap the correct slot.
               </p>
             </div>
           </div>
@@ -69,10 +69,10 @@ export function InstructionsModal({ open: externalOpen, onOpenChange }: Instruct
             <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent font-bold text-sm">2</div>
             <div>
               <h4 className="font-semibold text-sm sm:text-base flex items-center gap-1">
-                <Target className="h-4 w-4" /> Place on the Board
+                <Target className="h-4 w-4" /> Phase 2: Quotes
               </h4>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                Tap the correct cell on the puzzle board to place it. The piece snaps in with a green glow if correct; shakes red if wrong.
+                Place each quote piece in the <strong>bottom row</strong> under its matching key. The quote must go in the same column as its creativity stage.
               </p>
             </div>
           </div>
@@ -84,7 +84,7 @@ export function InstructionsModal({ open: externalOpen, onOpenChange }: Instruct
                 <Timer className="h-4 w-4" /> Scoring
               </h4>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                Score depends on speed and accuracy. Each miss costs points. Harder difficulties have more pieces and higher multipliers!
+                Score depends on speed and accuracy. Each miss costs points. Complete all 8 pieces (4 keys + 4 quotes) to finish.
               </p>
             </div>
           </div>
@@ -96,7 +96,7 @@ export function InstructionsModal({ open: externalOpen, onOpenChange }: Instruct
             <div>
               <h4 className="font-semibold text-sm sm:text-base">Tips</h4>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                Look at the piece numbers and the guide image for hints. Build combos by placing pieces correctly in a row for bonus XP!
+                Match each quote to the key above it (same column). Build combos by placing pieces correctly in a row for bonus XP!
               </p>
             </div>
           </div>
