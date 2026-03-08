@@ -127,6 +127,20 @@ export function calculateScore(
   return Math.round(raw * config.pointMultiplier);
 }
 
+export function calculateJigsawScore(
+  difficulty: string,
+  elapsedMs: number,
+  incorrectAttempts: number,
+  totalPieces: number,
+): number {
+  const config = DIFFICULTY_CONFIG[difficulty] || DIFFICULTY_CONFIG.medium;
+  const base = totalPieces * 40;
+  const timePenalty = Math.floor(elapsedMs / 1000);
+  const accuracyPenalty = incorrectAttempts * 15;
+  const raw = Math.max(base - timePenalty - accuracyPenalty, 50);
+  return Math.round(raw * config.pointMultiplier);
+}
+
 
 
 export const stageColors: Record<string, { bg: string; border: string; text: string }> = {

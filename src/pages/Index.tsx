@@ -420,11 +420,17 @@ const Index = () => {
             { icon: <Puzzle   className="h-5 w-5 text-primary mx-auto" />,              label: "Drag & Drop" },
             { icon: <Users    className="h-5 w-5 text-secondary mx-auto" />,            label: "Multiplayer" },
             { icon: <Trophy   className="h-5 w-5 text-accent mx-auto" />,              label: "Leaderboard" },
-            { icon: <BookOpen className="h-5 w-5 text-stage-elaboration mx-auto" />,   label: "5 Stages" },
+            { icon: <BookOpen className="h-5 w-5 text-stage-elaboration mx-auto" />,   label: "8‑Puzzle Lab", href: "/lab07/game" },
           ].map((f) => (
             <div key={f.label} className="flex flex-col items-center gap-1">
-              {f.icon}
-              <span>{f.label}</span>
+              <button
+                type="button"
+                onClick={() => f.href && navigate(f.href)}
+                className="flex flex-col items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {f.icon}
+                <span>{f.label}</span>
+              </button>
             </div>
           ))}
         </motion.div>

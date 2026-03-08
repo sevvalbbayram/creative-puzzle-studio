@@ -12,6 +12,7 @@ import Results from "./pages/Results";
 import Leaderboard from "./pages/Leaderboard";
 import TeacherDashboard from "./pages/TeacherDashboard";
 import TeacherLogin from "./pages/TeacherLogin";
+import GameTimePage from "./pages/GameTimePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,8 @@ const App = () => (
             <Route path="/results/:sessionId" element={<Results />} />
             <Route path="/dashboard/:sessionId" element={<TeacherDashboard />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
+            {/* Lab-style 8-puzzle & sliding puzzle demo */}
+            <Route path="/lab07/game" element={<GameTimePage />} />
             <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
