@@ -54,6 +54,11 @@ function sampleRandom<T>(arr: T[], count: number): T[] {
   return copy.slice(0, Math.min(count, copy.length));
 }
 
+/** Pick a random quote from a stage's pool — keeps quote matched to its key */
+function randomQuoteForStage(stage: CreativityStage): string {
+  return stage.quotes[Math.floor(Math.random() * stage.quotes.length)];
+}
+
 const STAGE_EMOJI: Record<string, string> = {
   preparation: "💡",
   incubation: "⏳",
@@ -74,7 +79,14 @@ export function JigsawImagePuzzle({
   const gridConfig = useMemo(() => getLevelGridConfig(level), [level]);
   const { cols, rows, numFixedClues, totalPieces, quoteSlots } = gridConfig;
 
-  const { pieces, fixedSlots } = useMemo(() => {
+  const { pieces, fixedSlots, fixedSlotQuotes, stageOrder } = useMemo(() => {
+    // 1. Fixed tiles: 4 key slots locked at (0,0), (0,1), (0,2), (0,3) — never shuffled
+    const keyCols = [0, 1, 2, 3];
+
+    // 2. Randomize which stage goes in which column — keys stay fixed, content shuffles
+    const order = shuffleArray([0, 1, 2, 3]);
+    const stageOrder = order; // column c -> stages[stageOrder[c]]
+
     const fixed = new Set<string>();
     const allQuoteSlots: [number, number][] = [];
     for (let r = 1; r < rows; r++) {
@@ -84,32 +96,45 @@ export function JigsawImagePuzzle({
     }
     const numFixed = Math.min(numFixedClues, allQuoteSlots.length);
     const chosen = sampleRandom(allQuoteSlots, numFixed);
-    chosen.forEach(([r, c]) => fixed.add(`${r}-${c}`));
+    const fixedSlotQuotes = new Map<string, string>();
+    chosen.forEach(([r, c]) => {
+      fixed.add(`${r}-${c}`);
+      const stage = stages[stageOrder[c]];
+      fixedSlotQuotes.set(`${r}-${c}`, randomQuoteForStage(stage));
+    });
 
-    const keyPieces: JigsawPiece[] = stages.map((s, c) => ({
-      id: c,
-      row: KEY_ROW,
-      col: c,
-      placed: false,
-      statement: s.name,
-      type: "key",
-    }));
+    // 3. Key pieces: locked positions, randomized stage assignment per column
+    const keyPieces: JigsawPiece[] = keyCols.map((c) => {
+      const stage = stages[stageOrder[c]];
+      return {
+        id: c,
+        row: KEY_ROW,
+        col: c,
+        placed: false,
+        statement: stage.name,
+        type: "key",
+        stageId: stage.id,
+      };
+    });
 
+    // 4. Thematic filler pool: only from the 4 active keys (contextual content)
     const fillerPool = getFillerQuotePool(stages);
-    const numFiller = Math.max(0, (level - 2) * 2); // Level 1-2: 0, Level 3: 2, Level 4: 4
+    const numFiller = Math.max(0, (level - 2) * 2);
 
+    // 5. Quote pieces: each slot (r,c) gets a random quote from that key's pool (matched to key)
     const quotePieces: JigsawPiece[] = [];
     let id = cols;
     for (const [r, c] of allQuoteSlots) {
       if (fixed.has(`${r}-${c}`)) continue;
+      const stage = stages[stageOrder[c]];
       quotePieces.push({
         id: id++,
         row: r,
         col: c,
         placed: false,
-        statement: stages[c].quote,
+        statement: randomQuoteForStage(stage),
         type: "quote",
-        stageId: stages[c].id,
+        stageId: stage.id,
       });
     }
     const fillerQuotes = sampleRandom(fillerPool, numFiller);
@@ -125,9 +150,12 @@ export function JigsawImagePuzzle({
       });
     });
 
+    // 6. Shuffle layout: randomize piece order in tray
     return {
       pieces: [...shuffleArray(keyPieces), ...shuffleArray(quotePieces)],
       fixedSlots: fixed,
+      fixedSlotQuotes,
+      stageOrder,
     };
   }, [level, rows, cols, numFixedClues, stages]);
 
@@ -316,7 +344,7 @@ export function JigsawImagePuzzle({
               const active = isCellActive(r, c);
 
               const displayStatement = fixed
-                ? stages[c]?.quote
+                ? fixedSlotQuotes?.get(`${r}-${c}`) ?? stages[stageOrder?.[c] ?? c]?.quote
                 : pieceAtCell?.statement;
 
               return (
