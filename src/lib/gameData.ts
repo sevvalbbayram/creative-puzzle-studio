@@ -106,6 +106,58 @@ export function getStatementsForGrid(
 // Default export for backward compat — randomized once on import
 export const CREATIVITY_STAGES: CreativityStage[] = getRandomizedStages();
 
+/**
+ * Difficulty scaling: map session difficulty to level (1–4).
+ * Level drives grid size and fixed-clue count.
+ */
+export function getLevelFromDifficulty(difficulty: string): number {
+  const map: Record<string, number> = { easy: 1, medium: 2, hard: 3, very_hard: 4 };
+  return map[difficulty] ?? 2;
+}
+
+export interface LevelGridConfig {
+  cols: number;
+  rows: number;
+  numFixedClues: number;
+  totalPieces: number;
+  /** Pieces the player must place (excludes pre-filled clues) */
+  totalToPlace: number;
+  keyRowSlots: number;
+  quoteSlots: number;
+}
+
+/**
+ * Grid scaling: Level 1 = 4×2, Level 2 = 4×3, Level 3 = 4×4, Level 4+ = 4×5.
+ * Fixed clues (assistance): Level 1 = 3, Level 2 = 2, Level 3 = 1, Level 4+ = 0.
+ * 4 main keys (Preparation, Incubation, Illumination, Verification) are always present.
+ */
+export function getLevelGridConfig(level: number): LevelGridConfig {
+  const lvl = Math.max(1, Math.min(level, 5));
+  const rows = 2 + Math.min(lvl - 1, 3); // 2,3,4,5
+  const cols = 4; // always 4 for the 4 main keys
+  const keyRowSlots = cols;
+  const quoteSlots = (rows - 1) * cols;
+  const numFixedClues = Math.max(0, Math.min(4 - lvl, quoteSlots));
+  const totalPieces = keyRowSlots + quoteSlots;
+  const totalToPlace = keyRowSlots + (quoteSlots - numFixedClues);
+  return { cols, rows, numFixedClues, totalPieces, totalToPlace, keyRowSlots, quoteSlots };
+}
+
+/**
+ * Build a pool of "filler" quotes for decoy pieces.
+ * Uses all quotes from all stages except the 4 correct ones (one per stage) for this game.
+ */
+export function getFillerQuotePool(stages: CreativityStage[]): string[] {
+  const correctQuotes = new Set(stages.map(s => s.quote));
+  const pool: string[] = [];
+  for (const s of stages) {
+    for (const q of s.quotes) {
+      if (!correctQuotes.has(q)) pool.push(q);
+    }
+  }
+  return pool;
+}
+
 // Difficulty settings
 export interface DifficultyConfig {
   label: string;

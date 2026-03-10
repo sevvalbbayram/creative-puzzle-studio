@@ -40,7 +40,7 @@ const GameEnhanced = () => {
   const difficulty = session?.difficulty ?? "medium";
   const config = DIFFICULTY_CONFIG[difficulty] || DIFFICULTY_CONFIG.medium;
   const gridConfig = getGridConfig(difficulty);
-  const totalPieces = gridConfig.cols * gridConfig.rows;
+  const totalPieces = gridConfig.totalToPlace;
 
   /** Randomized stages per game — drives statement layout on puzzle pieces */
   const [stages] = useState(() => getRandomizedStages());

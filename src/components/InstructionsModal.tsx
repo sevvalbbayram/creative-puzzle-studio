@@ -84,7 +84,7 @@ export function InstructionsModal({ open: externalOpen, onOpenChange }: Instruct
                 <Timer className="h-4 w-4" /> Scoring
               </h4>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                Score depends on speed and accuracy. Each miss costs points. Complete all 8 pieces (4 keys + 4 quotes) to finish.
+                Score depends on speed and accuracy. Each miss costs points. Difficulty scales: Easy = smaller grid + more pre-filled hints, Hard = larger grid + no hints. Some quote pieces are decoys (wrong) — avoid placing them!
               </p>
             </div>
           </div>
