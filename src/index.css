@@ -5,9 +5,10 @@
 @tailwind utilities;
 
 @layer base {
-  /* Mobile: comfortable touch targets and no 300ms tap delay on interactive elements */
+  /* Cross-device: no tap delay, no tap highlight, reliable touch/click */
   html {
     -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
   }
   button, [role="button"], a, input, select, textarea, [tabindex]:not([tabindex="-1"]) {
     touch-action: manipulation;
@@ -380,18 +381,92 @@ html {
 
 /* Statement/detail text bar on each puzzle piece (tray + board) */
 .jigsaw-piece-statement {
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.5));
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  /* Solid fallback for browsers without backdrop-filter */
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.82) 0%,
+    rgba(0, 0, 0, 0.65) 50%,
+    rgba(0, 0, 0, 0.45) 100%
+  );
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  padding: 0.35rem 0.5rem;
+  min-height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
+}
+@supports not (backdrop-filter: blur(1px)) {
+  .jigsaw-piece-statement {
+    background: rgba(0, 0, 0, 0.78);
+  }
 }
 
-/* Tray grid: horizontal scrollable on small screens */
+@media (max-width: 639px) {
+  .jigsaw-piece-statement {
+    padding: 0.4rem 0.5rem;
+    min-height: 2.25rem;
+  }
+}
+
+/* Quote text styling — elegant, readable, mobile-friendly */
+.jigsaw-piece-statement .quote-text {
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  letter-spacing: 0.01em;
+  line-height: 1.35;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 0 1px rgba(0, 0, 0, 0.8);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Key (stage name) text — bolder, non-italic */
+.jigsaw-piece-statement .key-text {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 0 1px rgba(0, 0, 0, 0.8);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Tray grid: mobile-optimized touch targets and scroll */
 @media (max-width: 639px) {
   .jigsaw-tray-grid {
-    grid-template-columns: repeat(4, 1fr);
-    max-height: 45vh;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    max-height: min(50vh, 320px);
     overflow-y: auto;
+    overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    padding-bottom: env(safe-area-inset-bottom, 0.5rem);
+  }
+  .jigsaw-tray-piece {
+    min-height: 80px;
+    min-width: 0;
+  }
+}
+
+/* Puzzle: reliable touch and pointer on all devices */
+.jigsaw-board button,
+.jigsaw-tray-piece {
+  touch-action: manipulation;
+}
+/* Focus ring for keyboard users (desktop) */
+.jigsaw-board button:focus-visible,
+.jigsaw-tray-piece:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.5);
+}
+/* Hover only on devices with hover capability — avoids sticky hover on touch */
+@media (hover: hover) {
+  .jigsaw-tray-piece:not([aria-pressed="true"]):hover {
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.15), 0 4px 6px -2px rgba(0,0,0,0.08);
+    transform: scale(1.03);
+    border-color: hsl(43 96% 40% / 0.6);
+  }
+  .jigsaw-tray-toggle:hover {
+    background: linear-gradient(to right, hsl(43 96% 40% / 0.25), hsl(45 90% 97%));
   }
 }
 

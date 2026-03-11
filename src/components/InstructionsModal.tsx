@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Puzzle, Target, Timer, Star, Smartphone } from "lucide-react";
+import { Puzzle, Target, Timer, Star } from "lucide-react";
 
 const STORAGE_KEY = "puzzle-instructions-seen";
 
@@ -72,7 +72,7 @@ export function InstructionsModal({ open: externalOpen, onOpenChange }: Instruct
                 <Target className="h-4 w-4" /> Phase 2: Quotes
               </h4>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                Place each quote piece in the <strong>bottom row</strong> under its matching key. The quote must go in the same column as its creativity stage.
+                Place each quote piece <strong>under its matching key</strong> (same column). Higher levels have multiple rows of quote slots.
               </p>
             </div>
           </div>

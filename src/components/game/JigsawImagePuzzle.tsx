@@ -300,10 +300,10 @@ export function JigsawImagePuzzle({
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 w-full max-w-5xl mx-auto">
+    <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 w-full max-w-5xl mx-auto px-2 sm:px-4 pb-4">
       <div className="flex-1 flex flex-col items-center">
         <div
-          className="jigsaw-board relative w-full rounded-xl border-2 border-explorer-gold/40 shadow-xl overflow-hidden bg-explorer-dark/5 touch-manipulation select-none"
+          className="jigsaw-board relative w-full rounded-xl border-2 border-explorer-gold/40 shadow-xl overflow-hidden bg-explorer-dark/5 touch-manipulation select-none min-h-[200px]"
           style={{ maxWidth: 640, aspectRatio: `${cols}/${rows}` }}
         >
           <img
@@ -391,7 +391,13 @@ export function JigsawImagePuzzle({
 
                   {(isPlaced || fixed) && displayStatement && (
                     <div className="absolute bottom-0 left-0 right-0 jigsaw-piece-statement rounded-b-sm">
-                      <span className="line-clamp-2 text-[8px] sm:text-[9px] leading-tight px-0.5 py-0.5 text-white drop-shadow-md font-medium">
+                      <span
+                        className={[
+                          "line-clamp-2 text-white pointer-events-none",
+                          "text-[9px] min-[380px]:text-[10px] sm:text-[11px]",
+                          r === KEY_ROW ? "key-text" : "quote-text",
+                        ].join(" ")}
+                      >
                         {displayStatement}
                       </span>
                       {fixed && (
@@ -513,11 +519,14 @@ export function JigsawImagePuzzle({
 
       <div className="w-full lg:w-80 flex flex-col">
         <button
+          type="button"
           onClick={() => setIsTrayExpanded((prev) => !prev)}
+          aria-expanded={isTrayExpanded}
+          aria-controls="jigsaw-tray-content"
           className={[
-            "w-full flex items-center justify-between p-3 rounded-xl transition-all duration-200",
-            "bg-gradient-to-r from-explorer-gold/15 to-explorer-parchment hover:from-explorer-gold/25 border border-explorer-gold/25",
-            "lg:bg-transparent lg:border-none lg:p-0 lg:hover:bg-transparent",
+            "jigsaw-tray-toggle w-full flex items-center justify-between p-3 rounded-xl transition-all duration-200 min-h-[44px]",
+            "bg-gradient-to-r from-explorer-gold/15 to-explorer-parchment border border-explorer-gold/25",
+            "lg:bg-transparent lg:border-none lg:p-0",
           ].join(" ")}
         >
           <h3 className="flex items-center gap-2 font-display text-sm font-bold sm:text-base">
@@ -543,6 +552,7 @@ export function JigsawImagePuzzle({
         <AnimatePresence>
           {isTrayExpanded && (
             <motion.div
+              id="jigsaw-tray-content"
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
@@ -584,7 +594,7 @@ export function JigsawImagePuzzle({
                           "min-h-[64px] touch-manipulation active:scale-95",
                           isSelected
                             ? "border-explorer-gold ring-2 ring-explorer-gold/50 ring-offset-2 scale-[1.08] shadow-glow-gold z-10"
-                            : "border-explorer-gold/30 shadow-card hover:shadow-card-hover hover:scale-[1.03] hover:border-explorer-gold/60",
+                            : "border-explorer-gold/30 shadow-card",
                           piece.isFiller ? "opacity-90" : "",
                         ].join(" ")}
                         style={getPieceImageStyle(imgRow, imgCol)}
@@ -593,16 +603,22 @@ export function JigsawImagePuzzle({
                       >
                         <div className="absolute bottom-0 left-0 right-0 jigsaw-piece-statement rounded-b-md">
                           {emoji && (
-                            <span className="absolute top-0.5 left-1 text-xs">
+                            <span className="absolute top-0.5 left-1.5 text-[10px] sm:text-xs">
                               {emoji}
                             </span>
                           )}
                           {piece.isFiller && (
-                            <span className="absolute top-0.5 right-1 text-[7px] text-amber-400 font-bold">
+                            <span className="absolute top-0.5 right-1.5 text-[8px] text-amber-400 font-bold">
                               ?
                             </span>
                           )}
-                          <span className="line-clamp-2 text-[7px] sm:text-[8px] leading-tight px-1 py-0.5 text-white drop-shadow-md font-medium pointer-events-none">
+                          <span
+                            className={[
+                              "line-clamp-2 text-white pointer-events-none",
+                              "text-[8px] min-[380px]:text-[9px] sm:text-[10px]",
+                              piece.type === "key" ? "key-text" : "quote-text",
+                            ].join(" ")}
+                          >
                             {piece.statement}
                           </span>
                         </div>

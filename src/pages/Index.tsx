@@ -426,7 +426,8 @@ const Index = () => {
               <button
                 type="button"
                 onClick={() => f.href && navigate(f.href)}
-                className="flex flex-col items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                className="flex flex-col items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors min-h-[44px] touch-manipulation"
+                aria-label={f.href ? `Go to ${f.label}` : f.label}
               >
                 {f.icon}
                 <span>{f.label}</span>

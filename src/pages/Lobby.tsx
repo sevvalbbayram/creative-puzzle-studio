@@ -222,9 +222,10 @@ const Lobby = () => {
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                        className="h-7 w-7 text-muted-foreground hover:text-destructive min-w-[44px] min-h-[44px]"
                         onClick={() => kickPlayer(p.id)}
                         title={`Remove ${p.nickname}`}
+                        aria-label={`Remove ${p.nickname} from game`}
                       >
                         <X className="h-3.5 w-3.5" />
                       </Button>

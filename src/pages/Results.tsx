@@ -21,7 +21,7 @@ const Results = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
   const { userId } = useAnonymousAuth();
-  const { session, players, currentPlayer } = useGameSession(sessionId ?? null, userId);
+  const { session, players, currentPlayer, loading } = useGameSession(sessionId ?? null, userId);
   const confettiFired = useRef(false);
 
   const isGameMaster = currentPlayer?.is_game_master ?? false;
@@ -32,32 +32,36 @@ const Results = () => {
   useEffect(() => {
     if (!currentPlayer?.completed || currentPlayer.score === 0) return;
     const save = async () => {
-      const { data: existing } = await supabase
-        .from("leaderboard")
-        .select("*")
-        .eq("user_id", currentPlayer.user_id)
-        .maybeSingle();
-      if (existing) {
-        await supabase
+      try {
+        const { data: existing } = await supabase
           .from("leaderboard")
-          .update({
-            total_score: existing.total_score + currentPlayer.score,
-            games_played: existing.games_played + 1,
-            best_time_ms: existing.best_time_ms
-              ? Math.min(existing.best_time_ms, currentPlayer.elapsed_time_ms)
-              : currentPlayer.elapsed_time_ms,
-            last_played_at: new Date().toISOString(),
+          .select("*")
+          .eq("user_id", currentPlayer.user_id)
+          .maybeSingle();
+        if (existing) {
+          await supabase
+            .from("leaderboard")
+            .update({
+              total_score: existing.total_score + currentPlayer.score,
+              games_played: existing.games_played + 1,
+              best_time_ms: existing.best_time_ms
+                ? Math.min(existing.best_time_ms, currentPlayer.elapsed_time_ms)
+                : currentPlayer.elapsed_time_ms,
+              last_played_at: new Date().toISOString(),
+              nickname: currentPlayer.nickname,
+            })
+            .eq("id", existing.id);
+        } else {
+          await supabase.from("leaderboard").insert({
+            user_id: currentPlayer.user_id,
             nickname: currentPlayer.nickname,
-          })
-          .eq("id", existing.id);
-      } else {
-        await supabase.from("leaderboard").insert({
-          user_id: currentPlayer.user_id,
-          nickname: currentPlayer.nickname,
-          total_score: currentPlayer.score,
-          games_played: 1,
-          best_time_ms: currentPlayer.elapsed_time_ms,
-        });
+            total_score: currentPlayer.score,
+            games_played: 1,
+            best_time_ms: currentPlayer.elapsed_time_ms,
+          });
+        }
+      } catch (err) {
+        console.warn("Leaderboard save failed:", err);
       }
     };
     save();
@@ -86,12 +90,29 @@ const Results = () => {
     return null;
   };
 
-  if (!session) {
+  if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}>
-          <Puzzle className="h-12 w-12 text-primary" />
+          <Puzzle className="h-12 w-12 text-primary" aria-hidden />
         </motion.div>
+        <span className="sr-only">Loading results…</span>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background px-6 text-center">
+        <Puzzle className="h-16 w-16 text-muted-foreground mb-4" aria-hidden />
+        <h1 className="font-display text-xl font-bold text-foreground">Session not found</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          This game may have ended or the link is invalid.
+        </p>
+        <Button variant="default" className="mt-6 gap-2" onClick={() => navigate("/")}>
+          <Home className="h-4 w-4" />
+          Back to Home
+        </Button>
       </div>
     );
   }

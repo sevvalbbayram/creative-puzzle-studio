@@ -175,7 +175,7 @@ const GameEnhanced = () => {
   if (!session) return null;
 
   return (
-    <div className="relative min-h-screen w-full bg-explorer overflow-hidden">
+    <div className="relative min-h-screen w-full bg-explorer overflow-x-hidden overflow-y-auto">
       {/* Ambient background blobs */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-explorer-gold/10 rounded-full blur-3xl opacity-30" />

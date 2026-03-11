@@ -6,7 +6,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import Lobby from "./pages/Lobby";
-import Game from "./pages/Game";
 import GameEnhanced from "./pages/GameEnhanced";
 import Results from "./pages/Results";
 import Leaderboard from "./pages/Leaderboard";

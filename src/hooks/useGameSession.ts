@@ -10,7 +10,7 @@ export function useGameSession(sessionId: string | null, userId: string | null) 
   const [session, setSession] = useState<GameSession | null>(null);
   const [players, setPlayers] = useState<GamePlayer[]>([]);
   const [currentPlayer, setCurrentPlayer] = useState<GamePlayer | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(!!sessionId);
   const [error, setError] = useState<string | null>(null);
 
   // Fetch session and players
