@@ -108,7 +108,7 @@ export const CREATIVITY_STAGES: CreativityStage[] = getRandomizedStages();
 
 /**
  * Difficulty scaling: map session difficulty to level (1–4).
- * Level drives grid size and fixed-clue count.
+ * Level drives grid size.
  */
 export function getLevelFromDifficulty(difficulty: string): number {
   const map: Record<string, number> = { easy: 1, medium: 2, hard: 3, very_hard: 4 };
@@ -120,7 +120,7 @@ export interface LevelGridConfig {
   rows: number;
   numFixedClues: number;
   totalPieces: number;
-  /** Pieces the player must place (excludes pre-filled clues) */
+  /** Pieces the player must place */
   totalToPlace: number;
   keyRowSlots: number;
   quoteSlots: number;
@@ -128,7 +128,7 @@ export interface LevelGridConfig {
 
 /**
  * Grid scaling: Level 1 = 4×2, Level 2 = 4×3, Level 3 = 4×4, Level 4+ = 4×5.
- * Fixed clues (assistance): Level 1 = 3, Level 2 = 2, Level 3 = 1, Level 4+ = 0.
+ * No pre-filled slots — all pieces start in the tray for the player to place.
  * 4 main keys (Preparation, Incubation, Illumination, Verification) are always present.
  */
 export function getLevelGridConfig(level: number): LevelGridConfig {
@@ -137,18 +137,17 @@ export function getLevelGridConfig(level: number): LevelGridConfig {
   const cols = 4; // always 4 for the 4 main keys
   const keyRowSlots = cols;
   const quoteSlots = (rows - 1) * cols;
-  const numFixedClues = Math.max(0, Math.min(4 - lvl, quoteSlots));
+  const numFixedClues = 0; // All pieces start in tray — player places everything
   const totalPieces = keyRowSlots + quoteSlots;
-  const totalToPlace = keyRowSlots + (quoteSlots - numFixedClues);
+  const totalToPlace = keyRowSlots + quoteSlots;
   return { cols, rows, numFixedClues, totalPieces, totalToPlace, keyRowSlots, quoteSlots };
 }
 
 /**
  * Build a pool of "filler" quotes for decoy pieces.
- * Uses all quotes from all stages except the 4 correct ones (one per stage) for this game.
+ * Excludes any quotes that are used as correct pieces in this game.
  */
-export function getFillerQuotePool(stages: CreativityStage[]): string[] {
-  const correctQuotes = new Set(stages.map(s => s.quote));
+export function getFillerQuotePool(stages: CreativityStage[], correctQuotes: Set<string>): string[] {
   const pool: string[] = [];
   for (const s of stages) {
     for (const q of s.quotes) {

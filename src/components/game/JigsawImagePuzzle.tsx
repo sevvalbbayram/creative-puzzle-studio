@@ -80,13 +80,11 @@ export function JigsawImagePuzzle({
   const { cols, rows, numFixedClues, totalPieces, quoteSlots } = gridConfig;
 
   const { pieces, fixedSlots, fixedSlotQuotes, stageOrder } = useMemo(() => {
-    // 1. Fixed tiles: 4 key slots locked at (0,0), (0,1), (0,2), (0,3) — never shuffled
+    // 1. Single source of truth: stageOrder maps column index -> stage index.
+    //    Keys and quotes both use this — quotes always follow their column's main key.
+    const stageOrder = shuffleArray([0, 1, 2, 3]);
+
     const keyCols = [0, 1, 2, 3];
-
-    // 2. Randomize which stage goes in which column — keys stay fixed, content shuffles
-    const order = shuffleArray([0, 1, 2, 3]);
-    const stageOrder = order; // column c -> stages[stageOrder[c]]
-
     const fixed = new Set<string>();
     const allQuoteSlots: [number, number][] = [];
     for (let r = 1; r < rows; r++) {
@@ -103,7 +101,7 @@ export function JigsawImagePuzzle({
       fixedSlotQuotes.set(`${r}-${c}`, randomQuoteForStage(stage));
     });
 
-    // 3. Key pieces: locked positions, randomized stage assignment per column
+    // 2. Key pieces: each column gets the stage from stageOrder — randomized per game
     const keyPieces: JigsawPiece[] = keyCols.map((c) => {
       const stage = stages[stageOrder[c]];
       return {
@@ -117,26 +115,30 @@ export function JigsawImagePuzzle({
       };
     });
 
-    // 4. Thematic filler pool: only from the 4 active keys (contextual content)
-    const fillerPool = getFillerQuotePool(stages);
-    const numFiller = Math.max(0, (level - 2) * 2);
-
-    // 5. Quote pieces: each slot (r,c) gets a random quote from that key's pool (matched to key)
+    // 3. Quote pieces: each slot (r,c) gets a random quote from that column's stage.
+    //    Quotes follow the main key — same stageOrder ensures correct matching.
     const quotePieces: JigsawPiece[] = [];
+    const correctQuotes = new Set<string>();
     let id = cols;
     for (const [r, c] of allQuoteSlots) {
       if (fixed.has(`${r}-${c}`)) continue;
       const stage = stages[stageOrder[c]];
+      const statement = randomQuoteForStage(stage);
+      correctQuotes.add(statement);
       quotePieces.push({
         id: id++,
         row: r,
         col: c,
         placed: false,
-        statement: randomQuoteForStage(stage),
+        statement,
         type: "quote",
         stageId: stage.id,
       });
     }
+
+    // 4. Filler decoys: wrong quotes (exclude correct ones so decoys never match)
+    const fillerPool = getFillerQuotePool(stages, correctQuotes);
+    const numFiller = Math.max(0, (level - 2) * 2);
     const fillerQuotes = sampleRandom(fillerPool, numFiller);
     fillerQuotes.forEach((q) => {
       quotePieces.push({
@@ -150,7 +152,7 @@ export function JigsawImagePuzzle({
       });
     });
 
-    // 6. Shuffle layout: randomize piece order in tray
+    // 5. Randomize tray order: keys and quotes shuffled so player must match by content
     return {
       pieces: [...shuffleArray(keyPieces), ...shuffleArray(quotePieces)],
       fixedSlots: fixed,
@@ -315,8 +317,7 @@ export function JigsawImagePuzzle({
           <div className="absolute top-1 left-1 z-10 flex flex-col gap-1 text-[9px] font-semibold text-white/80 drop-shadow-sm pointer-events-none">
             <span>{phase === 1 ? "1. Main keys" : "✓ Main keys"}</span>
             <span>
-              {phase === 2 ? "2. Quotes" : "Quotes"}
-              {numFixedClues > 0 && ` (${numFixedClues} pre-filled)`}
+            {phase === 2 ? "2. Quotes" : "Quotes"}
             </span>
           </div>
 
@@ -551,7 +552,7 @@ export function JigsawImagePuzzle({
               <p className="text-[10px] text-muted-foreground mt-2 mb-3 px-1 sm:text-xs italic">
                 {phase === 1
                   ? "Place each main key (Preparation, Incubation, Illumination, Verification) in the top row."
-                  : `Place each quote under its matching key. Level ${level}: ${rows}×${cols} grid, ${numFixedClues} pre-filled.`}
+                  : `Place each quote under its matching key. Level ${level}: ${rows}×${cols} grid.`}
               </p>
 
               <div className="jigsaw-tray-grid grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-2 sm:gap-2.5 overflow-y-auto lg:max-h-[calc(100vh-16rem)] pr-0.5 pb-4">
