@@ -314,7 +314,14 @@ export function JigsawImagePuzzle({
           className="jigsaw-board relative w-full rounded-xl border-2 border-explorer-gold/40 shadow-xl overflow-hidden bg-explorer-dark/5 touch-manipulation select-none min-h-[200px]"
           style={{ maxWidth: 640, aspectRatio: `${cols}/${rows}` }}
         >
-          {/* Elephant image only revealed as correct pieces are placed — no preview overlay */}
+          {/* Faint full-image guide so users see the puzzle they're building */}
+          <img
+            src={elephantImg}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover rounded-xl pointer-events-none opacity-[0.18]"
+            draggable={false}
+            aria-hidden
+          />
 
           <div className="absolute top-1 left-1 z-10 flex flex-col gap-1 text-[9px] font-semibold text-white/80 drop-shadow-sm pointer-events-none">
             <span>{phase === 1 ? "1. Main keys" : "✓ Main keys"}</span>
@@ -576,6 +583,8 @@ export function JigsawImagePuzzle({
                       piece.type === "quote" && piece.stageId
                         ? STAGE_EMOJI[piece.stageId]
                         : null;
+                    const imgRow = piece.type === "key" ? KEY_ROW : piece.isFiller ? 1 : piece.row;
+                    const imgCol = piece.type === "key" ? piece.col : piece.isFiller ? 0 : piece.col;
                     return (
                       <motion.button
                         key={piece.id}
@@ -593,12 +602,13 @@ export function JigsawImagePuzzle({
                         className={[
                           "jigsaw-tray-piece relative aspect-[4/3] sm:aspect-square cursor-pointer select-none rounded-lg border-2 transition-all duration-200",
                           "min-h-[64px] touch-manipulation active:scale-95",
-                          "bg-gradient-to-br from-explorer-dark/40 to-explorer-ocean/20",
+                          !piece.isFiller ? "" : "bg-gradient-to-br from-explorer-dark/40 to-explorer-ocean/20",
                           isSelected
                             ? "border-explorer-gold ring-2 ring-explorer-gold/50 ring-offset-2 scale-[1.08] shadow-glow-gold z-10"
                             : "border-explorer-gold/30 shadow-card",
                           piece.isFiller ? "opacity-90" : "",
                         ].join(" ")}
+                        style={!piece.isFiller ? getPieceImageStyle(imgRow, imgCol) : undefined}
                         aria-pressed={isSelected}
                         aria-label={`${piece.type === "key" ? "Key" : piece.isFiller ? "Decoy" : "Quote"}: ${piece.statement}`}
                       >
