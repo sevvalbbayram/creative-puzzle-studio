@@ -55,13 +55,22 @@ const Index = () => {
     if (!nickname.trim() || !gameCode.trim()) return;
     setSubmitting(true);
     setError(null);
-    const sess = await joinSession(gameCode.trim(), nickname.trim());
-    setSubmitting(false);
-    if (!sess) return;
-    if (sess.status === "playing") {
-      navigate(`/game/${sess.id}`);
-    } else {
-      navigate(`/lobby/${sess.id}`);
+    try {
+      const sess = await joinSession(gameCode.trim(), nickname.trim());
+      if (!sess) return;
+      if (sess.status === "playing") {
+        navigate(`/game/${sess.id}`);
+      } else {
+        navigate(`/lobby/${sess.id}`);
+      }
+    } catch (e) {
+      const msg =
+        e instanceof Error
+          ? e.message
+          : "Unable to join right now. Please try again.";
+      setError(msg);
+    } finally {
+      setSubmitting(false);
     }
   };
 

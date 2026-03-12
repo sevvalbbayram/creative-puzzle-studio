@@ -172,7 +172,27 @@ const GameEnhanced = () => {
   }, [timeUp, completed, difficulty, elapsedMs, incorrectAttempts, totalPieces, updateScore]);
 
   if (isGameMaster) return null;
-  if (!session) return null;
+
+  // Avoid a blank screen: if session can't be fetched (network/auth/RLS), show a recovery UI.
+  if (!session) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center bg-background px-4">
+        <div className="w-full max-w-md rounded-2xl border bg-card p-6 shadow-xl text-center space-y-3">
+          <h1 className="font-display text-xl font-bold">Unable to load the game</h1>
+          <p className="text-sm text-muted-foreground">
+            This usually happens if sign-in/session storage is blocked (private browsing settings),
+            or if the network is temporarily unavailable.
+          </p>
+          <div className="flex gap-2 justify-center pt-1">
+            <Button variant="outline" onClick={() => window.location.reload()}>
+              Reload
+            </Button>
+            <Button onClick={() => navigate("/")}>Back to Join</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-screen w-full bg-explorer overflow-x-hidden overflow-y-auto">
