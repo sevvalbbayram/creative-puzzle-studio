@@ -314,14 +314,7 @@ export function JigsawImagePuzzle({
           className="jigsaw-board relative w-full rounded-xl border-2 border-explorer-gold/40 shadow-xl overflow-hidden bg-explorer-dark/5 touch-manipulation select-none min-h-[200px]"
           style={{ maxWidth: 640, aspectRatio: `${cols}/${rows}` }}
         >
-          {/* Faint full-image guide so users see the puzzle they're building */}
-          <img
-            src={elephantImg}
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover rounded-xl pointer-events-none opacity-[0.18]"
-            draggable={false}
-            aria-hidden
-          />
+          {/* No background puzzle image — elephant only appears as correct pieces are placed */}
 
           <div className="absolute top-1 left-1 z-10 flex flex-col gap-1 text-[9px] font-semibold text-white/80 drop-shadow-sm pointer-events-none">
             <span>{phase === 1 ? "1. Main keys" : "✓ Main keys"}</span>
