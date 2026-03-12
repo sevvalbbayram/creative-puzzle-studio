@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, HelpCircle, Zap, Star, MapPin } from "lucide-react";
+import { Clock, HelpCircle, Zap, Star, MapPin, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useAnonymousAuth } from "@/hooks/useAnonymousAuth";
@@ -225,6 +225,14 @@ const GameEnhanced = () => {
               <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               <span>{timeRemaining !== null ? formatTime(timeRemaining) : formatTime(elapsedMs)}</span>
             </motion.div>
+
+            {/* Wrong attempts — distinguishes first-time success from trial-and-error */}
+            <div className="flex items-center gap-1 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg bg-muted/50">
+              <Target className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-muted-foreground" />
+              <span className="text-[10px] sm:text-xs font-medium text-muted-foreground">
+                {incorrectAttempts} miss{incorrectAttempts !== 1 ? "es" : ""}
+              </span>
+            </div>
 
             {/* Progress pill (desktop) */}
             <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-explorer-gold/15">

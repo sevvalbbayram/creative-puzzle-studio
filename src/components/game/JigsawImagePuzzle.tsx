@@ -81,8 +81,8 @@ export function JigsawImagePuzzle({
 
   const { pieces, fixedSlots, fixedSlotQuotes, stageOrder } = useMemo(() => {
     // 1. Single source of truth: stageOrder maps column index -> stage index.
-    //    Keys and quotes both use this — quotes always follow their column's main key.
-    const stageOrder = shuffleArray([0, 1, 2, 3]);
+    //    Fixed order per Prof Chai: Preparation -> Incubation -> Illumination -> Verification.
+    const stageOrder = [0, 1, 2, 3];
 
     const keyCols = [0, 1, 2, 3];
     const fixed = new Set<string>();
@@ -167,6 +167,14 @@ export function JigsawImagePuzzle({
   const [selectedPieceId, setSelectedPieceId] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<{ type: "correct" | "incorrect"; row: number; col: number } | null>(null);
   const [isTrayExpanded, setIsTrayExpanded] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 1023px)");
+    setIsMobile(mq.matches);
+    const handler = () => setIsMobile(mq.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
   const [lastPlacedCell, setLastPlacedCell] = useState<string | null>(null);
   const completedRef = useRef(false);
 
@@ -306,13 +314,7 @@ export function JigsawImagePuzzle({
           className="jigsaw-board relative w-full rounded-xl border-2 border-explorer-gold/40 shadow-xl overflow-hidden bg-explorer-dark/5 touch-manipulation select-none min-h-[200px]"
           style={{ maxWidth: 640, aspectRatio: `${cols}/${rows}` }}
         >
-          <img
-            src={elephantImg}
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover rounded-xl pointer-events-none opacity-[0.12]"
-            draggable={false}
-            aria-hidden
-          />
+          {/* Elephant image only revealed as correct pieces are placed — no preview overlay */}
 
           <div className="absolute top-1 left-1 z-10 flex flex-col gap-1 text-[9px] font-semibold text-white/80 drop-shadow-sm pointer-events-none">
             <span>{phase === 1 ? "1. Main keys" : "✓ Main keys"}</span>
@@ -520,8 +522,8 @@ export function JigsawImagePuzzle({
       <div className="w-full lg:w-80 flex flex-col">
         <button
           type="button"
-          onClick={() => setIsTrayExpanded((prev) => !prev)}
-          aria-expanded={isTrayExpanded}
+          onClick={() => !isMobile && setIsTrayExpanded((prev) => !prev)}
+          aria-expanded={isTrayExpanded || isMobile}
           aria-controls="jigsaw-tray-content"
           className={[
             "jigsaw-tray-toggle w-full flex items-center justify-between p-3 rounded-xl transition-all duration-200 min-h-[44px]",
@@ -540,7 +542,8 @@ export function JigsawImagePuzzle({
               {unplaced.length} left
             </span>
           </h3>
-          <div className="lg:hidden">
+          {/* On mobile, tray is always expanded — no collapse to avoid extra taps */}
+          <div className={isMobile ? "hidden" : "lg:hidden"}>
             {isTrayExpanded ? (
               <ChevronUp className="h-5 w-5" />
             ) : (
@@ -550,7 +553,7 @@ export function JigsawImagePuzzle({
         </button>
 
         <AnimatePresence>
-          {isTrayExpanded && (
+          {(isTrayExpanded || isMobile) && (
             <motion.div
               id="jigsaw-tray-content"
               initial={{ opacity: 0, height: 0 }}
@@ -573,8 +576,6 @@ export function JigsawImagePuzzle({
                       piece.type === "quote" && piece.stageId
                         ? STAGE_EMOJI[piece.stageId]
                         : null;
-                    const imgRow = piece.isFiller ? 1 : piece.row;
-                    const imgCol = piece.isFiller ? 0 : piece.col;
                     return (
                       <motion.button
                         key={piece.id}
@@ -592,12 +593,12 @@ export function JigsawImagePuzzle({
                         className={[
                           "jigsaw-tray-piece relative aspect-[4/3] sm:aspect-square cursor-pointer select-none rounded-lg border-2 transition-all duration-200",
                           "min-h-[64px] touch-manipulation active:scale-95",
+                          "bg-gradient-to-br from-explorer-dark/40 to-explorer-ocean/20",
                           isSelected
                             ? "border-explorer-gold ring-2 ring-explorer-gold/50 ring-offset-2 scale-[1.08] shadow-glow-gold z-10"
                             : "border-explorer-gold/30 shadow-card",
                           piece.isFiller ? "opacity-90" : "",
                         ].join(" ")}
-                        style={getPieceImageStyle(imgRow, imgCol)}
                         aria-pressed={isSelected}
                         aria-label={`${piece.type === "key" ? "Key" : piece.isFiller ? "Decoy" : "Quote"}: ${piece.statement}`}
                       >
@@ -614,9 +615,9 @@ export function JigsawImagePuzzle({
                           )}
                           <span
                             className={[
-                              "line-clamp-2 text-white pointer-events-none",
+                              "text-white pointer-events-none",
                               "text-[8px] min-[380px]:text-[9px] sm:text-[10px]",
-                              piece.type === "key" ? "key-text" : "quote-text",
+                              piece.type === "key" ? "key-text line-clamp-1" : "quote-text line-clamp-[6] sm:line-clamp-2",
                             ].join(" ")}
                           >
                             {piece.statement}

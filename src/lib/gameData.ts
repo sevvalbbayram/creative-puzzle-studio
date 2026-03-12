@@ -133,7 +133,8 @@ export interface LevelGridConfig {
  */
 export function getLevelGridConfig(level: number): LevelGridConfig {
   const lvl = Math.max(1, Math.min(level, 5));
-  const rows = 2 + Math.min(lvl - 1, 3); // 2,3,4,5
+  // Level 1: 4×2 (4 quotes), Level 2+: 4×4 (12 quotes) for symmetry
+  const rows = lvl === 1 ? 2 : 2 + Math.min(lvl, 3); // 2,4,5,5
   const cols = 4; // always 4 for the 4 main keys
   const keyRowSlots = cols;
   const quoteSlots = (rows - 1) * cols;

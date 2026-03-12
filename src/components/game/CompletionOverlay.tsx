@@ -75,6 +75,9 @@ export function CompletionOverlay({
               <p className="text-sm text-muted-foreground">
                 Time: {formatTime(elapsedMs)} · Misses: {incorrectAttempts}
               </p>
+              {incorrectAttempts === 0 && (
+                <p className="text-xs font-semibold text-success">Perfect first try! No trial and error.</p>
+              )}
               {isJigsaw && (
                 <p className="text-xs text-muted-foreground">
                   {totalPieces} pieces · {difficulty} difficulty
