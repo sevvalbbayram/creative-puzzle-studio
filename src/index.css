@@ -384,12 +384,13 @@ html {
   /* Solid fallback for browsers without backdrop-filter */
   background: linear-gradient(
     to top,
-    rgba(0, 0, 0, 0.70) 0%,
-    rgba(0, 0, 0, 0.50) 45%,
-    rgba(0, 0, 0, 0.30) 100%
+    rgba(0, 0, 0, 0.55) 0%,
+    rgba(0, 0, 0, 0.40) 45%,
+    rgba(0, 0, 0, 0.20) 100%
   );
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  /* Remove blur so puzzle art stays sharp under the text */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   padding: 0.35rem 0.5rem;
   min-height: 2rem;
   display: flex;
@@ -400,7 +401,7 @@ html {
 }
 @supports not (backdrop-filter: blur(1px)) {
   .jigsaw-piece-statement {
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.5);
   }
 }
 
@@ -413,6 +414,7 @@ html {
 
 /* Quote text styling — elegant, readable, mobile-friendly */
 .jigsaw-piece-statement .quote-text {
+  color: #fefefe;
   font-family: Georgia, "Times New Roman", serif;
   font-style: italic;
   letter-spacing: 0.01em;
