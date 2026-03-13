@@ -384,12 +384,12 @@ html {
   /* Solid fallback for browsers without backdrop-filter */
   background: linear-gradient(
     to top,
-    rgba(0, 0, 0, 0.82) 0%,
-    rgba(0, 0, 0, 0.65) 50%,
-    rgba(0, 0, 0, 0.45) 100%
+    rgba(0, 0, 0, 0.70) 0%,
+    rgba(0, 0, 0, 0.50) 45%,
+    rgba(0, 0, 0, 0.30) 100%
   );
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   padding: 0.35rem 0.5rem;
   min-height: 2rem;
   display: flex;
@@ -400,7 +400,7 @@ html {
 }
 @supports not (backdrop-filter: blur(1px)) {
   .jigsaw-piece-statement {
-    background: rgba(0, 0, 0, 0.78);
+    background: rgba(0, 0, 0, 0.6);
   }
 }
 
