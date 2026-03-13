@@ -413,11 +413,11 @@ export function JigsawImagePuzzle({
                   )}
 
                   {(isPlaced || fixed) && displayStatement && (
-                    <div className="absolute bottom-0 left-0 right-0 jigsaw-piece-statement rounded-b-sm">
+                    <div className="absolute inset-0 jigsaw-piece-statement rounded-sm flex items-center justify-center px-1 text-center">
                       <span
                         className={[
-                          "line-clamp-2 text-white pointer-events-none",
-                          "text-[9px] min-[380px]:text-[10px] sm:text-[11px]",
+                          "line-clamp-3 text-white pointer-events-none",
+                          "text-[8px] min-[380px]:text-[9px] sm:text-[10px]",
                           r === KEY_ROW ? "key-text" : "quote-text",
                         ].join(" ")}
                       >
@@ -623,7 +623,7 @@ export function JigsawImagePuzzle({
                         aria-pressed={isSelected}
                         aria-label={`${piece.type === "key" ? "Key" : piece.isFiller ? "Decoy" : "Quote"}: ${piece.statement}`}
                       >
-                        <div className="absolute bottom-0 left-0 right-0 jigsaw-piece-statement rounded-b-md">
+                        <div className="absolute inset-0 jigsaw-piece-statement rounded-md flex items-center justify-center px-2 text-center">
                           {emoji && (
                             <span className="absolute top-0.5 left-1.5 text-[10px] sm:text-xs">
                               {emoji}
