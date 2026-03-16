@@ -412,7 +412,7 @@ html {
   }
 }
 
-/* Quote text styling — elegant, readable, mobile-friendly */
+/* Quote text styling — elegant, readable, mobile-friendly; centered in card (feedback) */
 .jigsaw-piece-statement .quote-text {
   color: #fefefe;
   font-family: Georgia, "Times New Roman", serif;
@@ -431,12 +431,12 @@ html {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Tray grid: mobile-optimized touch targets and scroll */
+/* Tray grid: mobile-optimized — quotes visible without clicking (feedback #5) */
 @media (max-width: 639px) {
   .jigsaw-tray-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
-    max-height: min(50vh, 320px);
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    max-height: min(55vh, 400px);
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
@@ -444,8 +444,9 @@ html {
     padding-bottom: env(safe-area-inset-bottom, 0.5rem);
   }
   .jigsaw-tray-piece {
-    min-height: 80px;
+    min-height: 88px;
     min-width: 0;
+    aspect-ratio: auto;
   }
 }
 

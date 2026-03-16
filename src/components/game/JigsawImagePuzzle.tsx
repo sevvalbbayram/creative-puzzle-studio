@@ -59,6 +59,12 @@ function randomQuoteForStage(stage: CreativityStage): string {
   return stage.quotes[Math.floor(Math.random() * stage.quotes.length)];
 }
 
+/** Sample N unique quotes from a stage — ensures no duplicates per column (feedback: no doubles) */
+function sampleUniqueQuotesForStage(stage: CreativityStage, count: number): string[] {
+  const shuffled = shuffleArray([...stage.quotes]);
+  return shuffled.slice(0, Math.min(count, shuffled.length));
+}
+
 const STAGE_EMOJI: Record<string, string> = {
   preparation: "💡",
   incubation: "⏳",
@@ -101,6 +107,14 @@ export function JigsawImagePuzzle({
       fixedSlotQuotes.set(`${r}-${c}`, randomQuoteForStage(stage));
     });
 
+    // Per-column unique quote counts for non-fixed slots
+    const slotsPerCol = new Map<number, [number, number][]>();
+    for (const [r, c] of allQuoteSlots) {
+      if (fixed.has(`${r}-${c}`)) continue;
+      if (!slotsPerCol.has(c)) slotsPerCol.set(c, []);
+      slotsPerCol.get(c)!.push([r, c]);
+    }
+
     // 2. Key pieces: each column gets the stage from stageOrder — randomized per game
     const keyPieces: JigsawPiece[] = keyCols.map((c) => {
       const stage = stages[stageOrder[c]];
@@ -115,24 +129,27 @@ export function JigsawImagePuzzle({
       };
     });
 
-    // 3. Quote pieces: each slot (r,c) gets a random quote from that column's stage.
-    //    Quotes follow the main key — same stageOrder ensures correct matching.
+    // 3. Quote pieces: each column gets N unique quotes (no doubles). Any quote in a column
+    //    can go in any row of that column (feedback: flexibility for assessing student knowledge).
     const quotePieces: JigsawPiece[] = [];
     const correctQuotes = new Set<string>();
     let id = cols;
-    for (const [r, c] of allQuoteSlots) {
-      if (fixed.has(`${r}-${c}`)) continue;
+    for (const [c, slots] of slotsPerCol) {
       const stage = stages[stageOrder[c]];
-      const statement = randomQuoteForStage(stage);
-      correctQuotes.add(statement);
-      quotePieces.push({
-        id: id++,
-        row: r,
-        col: c,
-        placed: false,
-        statement,
-        type: "quote",
-        stageId: stage.id,
+      const uniqueQuotes = sampleUniqueQuotesForStage(stage, slots.length);
+      const shuffledSlots = shuffleArray(slots);
+      uniqueQuotes.forEach((statement, i) => {
+        const [r, col] = shuffledSlots[i] ?? [1, c];
+        correctQuotes.add(statement);
+        quotePieces.push({
+          id: id++,
+          row: r,
+          col,
+          placed: false,
+          statement,
+          type: "quote",
+          stageId: stage.id,
+        });
       });
     }
 
@@ -322,8 +339,9 @@ export function JigsawImagePuzzle({
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 w-full max-w-5xl mx-auto px-2 sm:px-4 pb-4">
-      <div className="flex-1 flex flex-col items-center">
+    <div className="flex flex-col-reverse lg:flex-row gap-4 lg:gap-6 w-full max-w-5xl mx-auto px-2 sm:px-4 pb-4">
+      {/* On mobile: tray first (above board) so quotes are visible without scrolling; desktop: board left, tray right */}
+      <div className="flex-1 flex flex-col items-center order-2 lg:order-1">
         <div
           className="jigsaw-board relative w-full rounded-xl border-2 border-explorer-gold/40 shadow-xl overflow-hidden bg-explorer-dark/5 touch-manipulation select-none min-h-[200px]"
           style={{ maxWidth: 640, aspectRatio: `${cols}/${rows}` }}
@@ -540,7 +558,7 @@ export function JigsawImagePuzzle({
         </div>
       </div>
 
-      <div className="w-full lg:w-80 flex flex-col">
+      <div className="w-full lg:w-80 flex flex-col order-1 lg:order-2">
         <button
           type="button"
           onClick={() => !isMobile && setIsTrayExpanded((prev) => !prev)}
@@ -612,7 +630,7 @@ export function JigsawImagePuzzle({
                         type="button"
                         onClick={() => handlePieceSelect(piece.id)}
                         className={[
-                          "jigsaw-tray-piece relative aspect-[4/3] sm:aspect-square cursor-pointer select-none rounded-lg border-2 transition-all duration-200",
+                          "jigsaw-tray-piece relative aspect-auto sm:aspect-[4/3] lg:aspect-square cursor-pointer select-none rounded-lg border-2 transition-all duration-200",
                           "min-h-[64px] touch-manipulation active:scale-95",
                           "bg-gradient-to-br from-explorer-dark/40 to-explorer-ocean/20",
                           isSelected
@@ -637,8 +655,8 @@ export function JigsawImagePuzzle({
                           <span
                             className={[
                               "text-white pointer-events-none",
-                              "text-[8px] min-[380px]:text-[9px] sm:text-[10px]",
-                              piece.type === "key" ? "key-text line-clamp-1" : "quote-text line-clamp-[6] sm:line-clamp-2",
+                              "text-[10px] sm:text-[10px]",
+                              piece.type === "key" ? "key-text line-clamp-1" : "quote-text line-clamp-none sm:line-clamp-2",
                             ].join(" ")}
                           >
                             {piece.statement}

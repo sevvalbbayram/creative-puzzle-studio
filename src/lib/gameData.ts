@@ -25,7 +25,6 @@ export const CREATIVITY_STAGES_BASE: Omit<CreativityStage, "quote">[] = [
       "You can't force creativity; sometimes you just have to let it happen. — Maya Angelou",
       "My best ideas usually come to me when I am stuck in traffic on my way to work along Clementi Road. — Chai Kah Hin",
       "The idea came into my mind during a walk... the whole thing was arranged in my mind. — James Watt",
-      "Late-night dreaming space is so fertile for new ideas. — Barbara Corcoran",
     ],
     color: "stage-incubation",
   },
@@ -130,8 +129,8 @@ export interface LevelGridConfig {
  */
 export function getLevelGridConfig(level: number): LevelGridConfig {
   const lvl = Math.max(1, Math.min(level, 5));
-  // Level 1: 4×2 (4 quotes), Level 2+: 4×4 (12 quotes) for symmetry
-  const rows = lvl === 1 ? 2 : 2 + Math.min(lvl, 3); // 2,4,5,5
+  // Minimum 12 quotes for symmetry (feedback: 8 was unreasonable). All levels: 4×4 grid (12 quotes).
+  const rows = 4;
   const cols = 4; // always 4 for the 4 main keys
   const keyRowSlots = cols;
   const quoteSlots = (rows - 1) * cols;
