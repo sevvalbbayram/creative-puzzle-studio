@@ -65,13 +65,6 @@ function sampleUniqueQuotesForStage(stage: CreativityStage, count: number): stri
   return shuffled.slice(0, Math.min(count, shuffled.length));
 }
 
-const STAGE_EMOJI: Record<string, string> = {
-  preparation: "💡",
-  incubation: "⏳",
-  illumination: "✨",
-  verification: "✅",
-};
-
 export function JigsawImagePuzzle({
   difficulty,
   stages,
@@ -611,10 +604,6 @@ export function JigsawImagePuzzle({
                 <AnimatePresence mode="popLayout">
                   {unplaced.map((piece) => {
                     const isSelected = selectedPieceId === piece.id;
-                    const emoji =
-                      piece.type === "quote" && piece.stageId
-                        ? STAGE_EMOJI[piece.stageId]
-                        : null;
                     return (
                       <motion.button
                         key={piece.id}
@@ -642,11 +631,6 @@ export function JigsawImagePuzzle({
                         aria-label={`${piece.type === "key" ? "Key" : piece.isFiller ? "Decoy" : "Quote"}: ${piece.statement}`}
                       >
                         <div className="absolute inset-0 jigsaw-piece-statement rounded-md flex items-center justify-center px-2 text-center">
-                          {emoji && (
-                            <span className="absolute top-0.5 left-1.5 text-[10px] sm:text-xs">
-                              {emoji}
-                            </span>
-                          )}
                           {piece.isFiller && (
                             <span className="absolute top-0.5 right-1.5 text-[8px] text-amber-400 font-bold">
                               ?
@@ -662,9 +646,6 @@ export function JigsawImagePuzzle({
                             {piece.statement}
                           </span>
                         </div>
-                        <span className="absolute top-0.5 right-1 text-[8px] font-bold text-white/80 drop-shadow-sm pointer-events-none">
-                          {piece.id + 1}
-                        </span>
                         {isSelected && (
                           <motion.div
                             initial={{ opacity: 0, scale: 0 }}
