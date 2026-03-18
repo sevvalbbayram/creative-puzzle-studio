@@ -19,8 +19,7 @@ const STAGES = [
   { name: "Preparation",  color: "bg-stage-preparation",  emoji: "🔵" },
   { name: "Incubation",   color: "bg-stage-incubation",   emoji: "🟣" },
   { name: "Illumination", color: "bg-stage-illumination", emoji: "🟡" },
-  { name: "Evaluation",   color: "bg-stage-evaluation",   emoji: "🔴" },
-  { name: "Elaboration",  color: "bg-stage-elaboration",  emoji: "🟢" },
+  { name: "Verification", color: "bg-stage-verification",  emoji: "✅" },
 ];
 
 const Index = () => {
