@@ -283,7 +283,7 @@ export function JigsawPuzzleBoard({
                       whileHover={!quoteSlot.filled ? { scale: 1.06 } : {}}
                       whileTap={!quoteSlot.filled ? { scale: 0.94 } : {}}
                       className={[
-                        "puzzle-piece flex min-h-[2rem] items-center justify-center p-1.5 text-center text-[5px] leading-tight",
+                        "puzzle-piece flex min-h-[2rem] items-start justify-center p-1.5 text-center text-[5px] leading-tight overflow-y-auto",
                         "backdrop-blur-[2px] transition-all duration-200 sm:min-h-[2.6rem] sm:text-[7px] md:min-h-[3rem] md:text-[9px]",
                         quoteSlot.filled
                           ? `${colors.bg}/65 ${colors.text} jigsaw-filled shadow-lg`
@@ -300,8 +300,8 @@ export function JigsawPuzzleBoard({
                       ].filter(Boolean).join(" ")}
                     >
                       {quoteSlot.filled ? (
-                        <span className="italic drop-shadow-sm leading-tight px-0.5">
-                          "{quoteSlot.label.length > 30 ? quoteSlot.label.slice(0, 28) + "…" : quoteSlot.label}"
+                        <span className="italic drop-shadow-sm leading-tight px-0.5 block overflow-y-auto max-h-full line-clamp-none text-left">
+                          "{quoteSlot.label}"
                         </span>
                       ) : (
                         <span className="opacity-70">📝 ?</span>

@@ -109,11 +109,11 @@ function DraggableTrayItem({
           </span>
         </div>
       ) : (
-        <div className="flex items-start gap-1.5">
+        <div className="flex items-start gap-1.5 overflow-y-auto min-h-0 flex-1">
           <span className="mt-0.5 shrink-0 text-[11px]" aria-hidden>
             💬
           </span>
-          <span className="italic text-[10px] leading-snug text-muted-foreground sm:text-[11px]">
+          <span className="italic text-[10px] leading-snug text-muted-foreground sm:text-[11px] break-words line-clamp-none">
             "{piece.label}"
           </span>
         </div>

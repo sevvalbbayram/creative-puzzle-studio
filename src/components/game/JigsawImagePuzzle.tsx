@@ -424,10 +424,11 @@ export function JigsawImagePuzzle({
                   )}
 
                   {(isPlaced || fixed) && displayStatement && (
-                    <div className="absolute inset-0 jigsaw-piece-statement rounded-sm flex items-center justify-center px-1 text-center">
+                    <div className="absolute inset-0 jigsaw-piece-statement rounded-sm flex items-center justify-center px-1 text-center overflow-y-auto">
                       <span
                         className={[
-                          "line-clamp-3 text-white pointer-events-none",
+                          r === KEY_ROW ? "line-clamp-1" : "line-clamp-none",
+                          "text-white pointer-events-none block",
                           "text-[8px] min-[380px]:text-[9px] sm:text-[10px]",
                           r === KEY_ROW ? "key-text" : "quote-text",
                         ].join(" ")}
@@ -630,7 +631,7 @@ export function JigsawImagePuzzle({
                         aria-pressed={isSelected}
                         aria-label={`${piece.type === "key" ? "Key" : piece.isFiller ? "Decoy" : "Quote"}: ${piece.statement}`}
                       >
-                        <div className="absolute inset-0 jigsaw-piece-statement rounded-md flex items-center justify-center px-2 text-center">
+                        <div className="absolute inset-0 jigsaw-piece-statement rounded-md flex items-center justify-center px-2 text-center overflow-y-auto">
                           {piece.isFiller && (
                             <span className="absolute top-0.5 right-1.5 text-[8px] text-amber-400 font-bold">
                               ?
@@ -640,7 +641,7 @@ export function JigsawImagePuzzle({
                             className={[
                               "text-white pointer-events-none",
                               "text-[10px] sm:text-[10px]",
-                              piece.type === "key" ? "key-text line-clamp-1" : "quote-text line-clamp-none sm:line-clamp-2",
+                              piece.type === "key" ? "key-text line-clamp-1" : "quote-text line-clamp-none",
                             ].join(" ")}
                           >
                             {piece.statement}

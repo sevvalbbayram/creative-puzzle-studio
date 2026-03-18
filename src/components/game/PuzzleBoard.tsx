@@ -178,7 +178,7 @@ export function PuzzleBoard({
                   }}
                   aria-label={quoteSlot.filled ? `Quote for ${stage.name}` : `Quote slot for stage ${i + 1}`}
                   className={[
-                    "puzzle-piece flex min-h-[2rem] items-center justify-center p-1.5 text-center text-[5px] leading-tight",
+                    "puzzle-piece flex min-h-[2rem] items-start justify-center p-1.5 text-center text-[5px] leading-tight overflow-y-auto",
                     "backdrop-blur-[2px] transition-all duration-200 sm:min-h-[2.6rem] sm:text-[7px] md:min-h-[3rem] md:text-[9px]",
                     quoteSlot.filled
                       ? `${colors.bg}/65 ${colors.text} jigsaw-filled`
@@ -194,8 +194,8 @@ export function PuzzleBoard({
                   ].filter(Boolean).join(" ")}
                 >
                   {quoteSlot.filled ? (
-                    <span className="italic drop-shadow-sm leading-tight px-0.5">
-                      "{stage.quote.length > 30 ? stage.quote.slice(0, 28) + "…" : stage.quote}"
+                    <span className="italic drop-shadow-sm leading-tight px-0.5 block overflow-y-auto max-h-full line-clamp-none text-left">
+                      "{stage.quote}"
                     </span>
                   ) : (
                     <span className="opacity-70">📝 ?</span>
