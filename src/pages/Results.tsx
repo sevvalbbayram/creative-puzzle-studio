@@ -9,6 +9,7 @@ import { useGameSession } from "@/hooks/useGameSession";
 import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import confetti from "canvas-confetti";
+import elephantPuzzleImage from "@/assets/elephant-puzzle-new.png";
 
 const DIFFICULTY_LABELS: Record<string, string> = {
   easy: "Easy",
@@ -123,7 +124,7 @@ const Results = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-lg space-y-6"
+        className="w-full max-w-xl space-y-6"
       >
         {/* Header */}
         <div className="text-center">
@@ -167,6 +168,21 @@ const Results = () => {
             </motion.div>
           )}
         </div>
+
+        {/* Full puzzle — same artwork as the jigsaw; visible to teacher and all students when the game ends */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.45 }}
+          className="overflow-hidden rounded-2xl border bg-card p-3 shadow-md"
+        >
+          <img
+            src={elephantPuzzleImage}
+            alt="Complete creativity puzzle: elephant artwork"
+            className="mx-auto max-h-[min(52vh,440px)] w-full rounded-lg object-contain"
+          />
+          <p className="mt-2 text-center text-xs font-medium text-muted-foreground">The complete puzzle</p>
+        </motion.div>
 
         {/* Full Scoreboard */}
         <Card>

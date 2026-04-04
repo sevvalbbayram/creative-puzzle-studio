@@ -9,6 +9,7 @@ import { useAnonymousAuth } from "@/hooks/useAnonymousAuth";
 import { useGameSession } from "@/hooks/useGameSession";
 import { DIFFICULTY_CONFIG, calculateJigsawScore, getRandomizedStages } from "@/lib/gameData";
 import { playCorrectSound, playIncorrectSound, playCelebrationSound } from "@/lib/audioFeedback";
+import elephantPuzzleImage from "@/assets/elephant-puzzle-new.png";
 import { JigsawImagePuzzle, getGridConfig } from "@/components/game/JigsawImagePuzzle";
 import { CompletionOverlay } from "@/components/game/CompletionOverlay";
 import { InstructionsModal } from "@/components/InstructionsModal";
@@ -373,6 +374,7 @@ const GameEnhanced = () => {
         incorrectAttempts={incorrectAttempts}
         difficulty={difficulty}
         totalPieces={totalPieces}
+        puzzleImageSrc={elephantPuzzleImage}
         onViewResults={() => navigate(`/results/${sessionId}`)}
       />
     </div>

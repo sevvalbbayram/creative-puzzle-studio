@@ -10,6 +10,8 @@ interface CompletionOverlayProps {
   incorrectAttempts: number;
   difficulty: string;
   totalPieces?: number;
+  /** Full solved puzzle image (e.g. elephant artwork) — shown whenever the game ends */
+  puzzleImageSrc?: string;
   onViewResults: () => void;
 }
 
@@ -20,6 +22,7 @@ export function CompletionOverlay({
   incorrectAttempts,
   difficulty,
   totalPieces,
+  puzzleImageSrc,
   onViewResults,
 }: CompletionOverlayProps) {
   const formatTime = (ms: number) => {
@@ -40,14 +43,29 @@ export function CompletionOverlay({
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm safe-area-inset"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm safe-area-inset overflow-y-auto py-6"
         >
           <motion.div
             initial={{ scale: 0.5, y: 50 }}
             animate={{ scale: 1, y: 0 }}
             transition={{ type: "spring", stiffness: 120, damping: 16 }}
-            className="mx-4 w-full max-w-sm rounded-2xl bg-card p-7 sm:p-8 text-center shadow-2xl"
+            className={`mx-4 w-full rounded-2xl bg-card p-7 sm:p-8 text-center shadow-2xl ${puzzleImageSrc ? "max-w-md sm:max-w-lg" : "max-w-sm"}`}
           >
+            {puzzleImageSrc && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="mb-5 overflow-hidden rounded-xl border bg-muted/40 p-2 shadow-inner"
+              >
+                <img
+                  src={puzzleImageSrc}
+                  alt="Complete puzzle"
+                  className="mx-auto max-h-[min(42vh,360px)] w-full object-contain"
+                />
+                <p className="mt-2 text-[11px] font-medium text-muted-foreground">The complete puzzle</p>
+              </motion.div>
+            )}
             {timeUp ? (
               <>
                 <AlertTriangle className="mx-auto h-14 w-14 sm:h-16 sm:w-16 text-secondary" />
