@@ -92,15 +92,20 @@ const IdeaQuestion = () => {
     setSaving(true);
     setSaveError(null);
 
-    const { error } = await (supabase as any).from("idea_responses").insert({
-  player_name: nickname,
-  session_id: sessionId ?? null,
-  response: trimmed,
-});
+    console.log("Attempting insert:", { player_name: nickname, session_id: sessionId ?? null, response: trimmed });
+    console.log("Supabase URL:", import.meta.env.VITE_SUPABASE_URL);
+
+    const { data, error } = await (supabase as any).from("idea_responses").insert({
+      player_name: nickname,
+      session_id: sessionId ?? null,
+      response: trimmed,
+    }).select();
+
+    console.log("Insert result:", { data, error });
 
     setSaving(false);
     if (error) {
-      setSaveError(error.message);
+      setSaveError(error.message + " | code: " + error.code);
       return;
     }
     setSubmitted(true);
