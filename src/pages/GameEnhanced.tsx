@@ -292,7 +292,6 @@ const GameEnhanced = () => {
           onCompleted={handleCompleted}
           onPhaseComplete={handlePhaseComplete}
           isPaused={isPaused}
-          ideaResponse={new URLSearchParams(window.location.search).get("idea") ?? ""}
         />
       </main>
 

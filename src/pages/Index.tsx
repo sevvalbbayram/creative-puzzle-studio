@@ -58,10 +58,10 @@ const Index = () => {
       const sess = await joinSession(gameCode.trim(), nickname.trim());
       if (!sess) return;
       if (sess.status === "playing") {
-        navigate(`/idea/${sess.id}?next=game&nickname=${encodeURIComponent(nickname.trim())}`);
+        navigate(`/game/${sess.id}`);
       } else {
-  navigate(`/idea/${sess.id}?next=lobby&nickname=${encodeURIComponent(nickname.trim())}`);
-}
+        navigate(`/lobby/${sess.id}`);
+      }
     } catch (e) {
       const msg =
         e instanceof Error

@@ -44,7 +44,6 @@ function wordSize(count: number, max: number) {
   if (max <= 1) return "1.2rem";
   return `${(min + ((count - 1) / (max - 1)) * (ceil - min)).toFixed(2)}rem`;
 }
-
 const TeacherDashboard = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();

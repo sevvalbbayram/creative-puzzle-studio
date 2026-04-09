@@ -22,6 +22,7 @@ export const CREATIVITY_STAGES_BASE: Omit<CreativityStage, "quote">[] = [
     id: "incubation",
     name: "Incubation",
     quotes: [
+      "You can't force creativity; sometimes you just have to let it happen. — Maya Angelou",
       "My best ideas usually come to me when I am stuck in traffic on my way to work along Clementi Road. — Chai Kah Hin",
       "The idea came into my mind during a walk... the whole thing was arranged in my mind. — James Watt",
     ],

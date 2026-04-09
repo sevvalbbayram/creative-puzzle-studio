@@ -37,7 +37,6 @@ interface JigsawImagePuzzleProps {
   onCompleted: () => void;
   onPhaseComplete?: () => void;
   isPaused?: boolean;
-  ideaResponse?: string;
 }
 
 function shuffleArray<T>(arr: T[]): T[] {
@@ -74,7 +73,6 @@ export function JigsawImagePuzzle({
   onCompleted,
   onPhaseComplete,
   isPaused = false,
-  ideaResponse = "",
 }: JigsawImagePuzzleProps) {
   const level = getLevelFromDifficulty(difficulty);
   const gridConfig = useMemo(() => getLevelGridConfig(level), [level]);
@@ -147,24 +145,7 @@ export function JigsawImagePuzzle({
         });
       });
     }
-// 4b. Player's personal idea piece — goes in the Incubation column (col index 1)
-    if (ideaResponse) {
-      const incubationColIndex = stageOrder.findIndex(
-        (si) => stages[si]?.id === "incubation"
-      );
-      if (incubationColIndex !== -1) {
-        const stage = stages[stageOrder[incubationColIndex]];
-        quotePieces.push({
-          id: id++,
-          row: -1,
-          col: incubationColIndex,
-          placed: false,
-          statement: `💡 "${ideaResponse}"`,
-          type: "quote",
-          stageId: stage.id,
-        });
-      }
-    }
+
     // 4. Filler decoys: wrong quotes (exclude correct ones so decoys never match)
     const fillerPool = getFillerQuotePool(stages, correctQuotes);
     const numFiller = Math.max(0, (level - 2) * 2);
