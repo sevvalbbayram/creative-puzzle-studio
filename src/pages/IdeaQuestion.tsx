@@ -100,7 +100,7 @@ const IdeaQuestion = () => {
 
     setSaving(false);
     if (error) {
-      setSaveError("Couldn't save — please try again.");
+      setSaveError(error.message);
       return;
     }
     setSubmitted(true);
@@ -161,7 +161,7 @@ const IdeaQuestion = () => {
             {!submitted ? (
               <>
                 <Input
-                  placeholder="e.g. the shower, long walks, coffee…"
+                  placeholder="e.g. the shower, long walks…"
                   value={answer}
                   onChange={(e) => setAnswer(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
