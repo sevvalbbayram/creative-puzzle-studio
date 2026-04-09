@@ -58,9 +58,9 @@ const Index = () => {
       const sess = await joinSession(gameCode.trim(), nickname.trim());
       if (!sess) return;
       if (sess.status === "playing") {
-        navigate(`/game/${sess.id}`);
+        navigate(`/idea/${sess.id}?next=game&nickname=${encodeURIComponent(nickname.trim())}`);
       } else {
-        navigate(`/lobby/${sess.id}`);
+        navigate(`/idea/${sess.id}?next=lobby&nickname=${encodeURIComponent(nickname.trim())}`);
       }
     } catch (e) {
       const msg =
