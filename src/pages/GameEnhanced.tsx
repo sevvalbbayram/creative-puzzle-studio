@@ -32,6 +32,7 @@ const GameEnhanced = () => {
   const [broadcastToast, setBroadcastToast] = useState<string | null>(null);
   const [showHalfwayToast, setShowHalfwayToast] = useState(false);
   const [xp, setXp] = useState(0);
+  const [placedStatements, setPlacedStatements] = useState<{ col: number; statement: string; stageId?: string }[]>([]);
   const [placedCount, setPlacedCount] = useState(0);
 
   const halfwayTriggered = useRef(false);
@@ -136,8 +137,9 @@ const GameEnhanced = () => {
     confetti({ particleCount: 80, spread: 70, origin: { y: 0.5 } });
   }, []);
 
-  const handleCompleted = useCallback(() => {
+  const handleCompleted = useCallback((statements: { col: number; statement: string; stageId?: string }[]) => {
     setCompleted(true);
+    setPlacedStatements(statements);
     clearInterval(timerRef.current);
     const finalScore = calculateJigsawScore(difficulty, elapsedMs, incorrectAttempts, totalPieces);
     updateScore(finalScore, incorrectAttempts, elapsedMs, true);
@@ -292,6 +294,7 @@ const GameEnhanced = () => {
           onCompleted={handleCompleted}
           onPhaseComplete={handlePhaseComplete}
           isPaused={isPaused}
+          ideaResponse ={new URLSearchParams(window.location.search).get("idea") ?? ""}
         />
       </main>
 
@@ -376,6 +379,7 @@ const GameEnhanced = () => {
         totalPieces={totalPieces}
         puzzleImageSrc={elephantPuzzleImage}
         onViewResults={() => navigate(`/results/${sessionId}`)}
+        placedStatements={placedStatements}
       />
     </div>
   );

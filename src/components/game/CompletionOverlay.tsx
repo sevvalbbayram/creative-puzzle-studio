@@ -10,9 +10,9 @@ interface CompletionOverlayProps {
   incorrectAttempts: number;
   difficulty: string;
   totalPieces?: number;
-  /** Full solved puzzle image (e.g. elephant artwork) — shown whenever the game ends */
   puzzleImageSrc?: string;
   onViewResults: () => void;
+  placedStatements?: { col: number; statement: string; stageId?: string }[];
 }
 
 export function CompletionOverlay({
@@ -24,18 +24,20 @@ export function CompletionOverlay({
   totalPieces,
   puzzleImageSrc,
   onViewResults,
+  placedStatements = [],
 }: CompletionOverlayProps) {
-  const formatTime = (ms: number) => {
-    const s = Math.floor(ms / 1000);
-    const m = Math.floor(s / 60);
-    return `${m}:${String(s % 60).padStart(2, "0")}`;
-  };
 
   const score = totalPieces
     ? calculateJigsawScore(difficulty, elapsedMs, incorrectAttempts, totalPieces)
     : calculateScore(difficulty, elapsedMs, incorrectAttempts);
 
   const isJigsaw = !!totalPieces;
+
+  const formatTime = (ms: number) => {
+    const s = Math.floor(ms / 1000);
+    const m = Math.floor(s / 60);
+    return `${m}:${String(s % 60).padStart(2, "0")}`;
+  };
 
   return (
     <AnimatePresence>
@@ -64,6 +66,27 @@ export function CompletionOverlay({
                   className="mx-auto max-h-[min(42vh,360px)] w-full object-contain"
                 />
                 <p className="mt-2 text-[11px] font-medium text-muted-foreground">The complete puzzle</p>
+              </motion.div>
+            )}
+
+            {placedStatements.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="mb-5 rounded-xl border bg-muted/40 p-3 text-left"
+              >
+                <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Quotes placed
+                </p>
+                <div className="space-y-1.5 max-h-[180px] overflow-y-auto">
+                  {placedStatements.map((s, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <span className="mt-0.5 text-xs">💬</span>
+                      <p className="text-xs text-foreground leading-snug">{s.statement}</p>
+                    </div>
+                  ))}
+                </div>
               </motion.div>
             )}
             {timeUp ? (
