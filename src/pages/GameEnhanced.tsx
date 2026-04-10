@@ -378,7 +378,7 @@ const GameEnhanced = () => {
         difficulty={difficulty}
         totalPieces={totalPieces}
         puzzleImageSrc={elephantPuzzleImage}
-        onViewResults={() => navigate(`/results/${sessionId}`)}
+        onViewResults={() => navigate(`/results/${sessionId}`, { state: { placedStatements } })}
         placedStatements={placedStatements}
       />
     </div>

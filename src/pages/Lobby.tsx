@@ -59,7 +59,8 @@ const Lobby = () => {
 
   useEffect(() => {
     if (session?.status === "playing") {
-      navigate(`/game/${session.id}`);
+      const idea = new URLSearchParams(window.location.search).get("idea") ?? "";
+      navigate(`/game/${session.id}${idea ? `?idea=${encodeURIComponent(idea)}` : ""}`);
     }
     if (session?.status === "finished") {
       navigate(`/results/${session.id}`);
