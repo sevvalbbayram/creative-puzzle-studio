@@ -59,29 +59,15 @@ const IdeaQuestion = () => {
   // ── Load existing responses + subscribe to realtime ───────────────────────
   useEffect(() => {
     if (!sessionId) return;
-
-    // Initial fetch
-    (supabase as any)
-  .from("idea_responses")
-  .select("response")
-  .eq("session_id", sessionId)
-  .then(({ data }: { data: { response: string }[] | null }) => {
-    if (data) setAllResponses(data.map((r) => r.response));
-  });
-
-    // Live updates
-    const channel = supabase
-      .channel(`idea_${sessionId}`)
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "idea_responses", filter: `session_id=eq.${sessionId}` },
-        (payload) => {
-          const row = payload.new as { response: string };
-          setAllResponses((prev) => [...prev, row.response]);
-        }
-      )
+    const channel = supabase.channel(`idea_room_${sessionId}`, {
+      config: { broadcast: { self: true } },
+    });
+    channel
+      .on("broadcast", { event: "idea_response" }, (payload) => {
+        const response = payload.payload?.response as string;
+        if (response) setAllResponses((prev) => [...prev, response]);
+      })
       .subscribe();
-
     return () => { supabase.removeChannel(channel); };
   }, [sessionId]);
 
@@ -91,29 +77,22 @@ const IdeaQuestion = () => {
     if (!trimmed) return;
     setSaving(true);
     setSaveError(null);
-
-    console.log("Attempting insert:", { player_name: nickname, session_id: sessionId ?? null, response: trimmed });
-    console.log("Supabase URL:", import.meta.env.VITE_SUPABASE_URL);
-
-    const { data, error } = await (supabase as any).from("idea_responses").insert({
-      player_name: nickname,
-      session_id: sessionId ?? null,
-      response: trimmed,
-    }).select();
-
-    console.log("Insert result:", { data, error });
-
-    setSaving(false);
-    if (error) {
-      setSaveError(error.message + " | code: " + error.code);
-      return;
+    try {
+      const broadcastChannel = supabase.channel(`idea_room_${sessionId}`);
+      await broadcastChannel.send({
+        type: "broadcast",
+        event: "idea_response",
+        payload: { response: trimmed, nickname },
+      });
+      setSubmitted(true);
+    } catch {
+      setSaveError("Couldn't send — please try again.");
+    } finally {
+      setSaving(false);
     }
-    setSubmitted(true);
   };
-
   // ── Go to next screen ─────────────────────────────────────────────────────
   const handleContinue = () => {
-    const ideaParam = `&idea=${encodeURIComponent(answer)}`;
     if (next === "game") {
       navigate(`/game/${sessionId}?idea=${encodeURIComponent(answer)}`);
     } else {

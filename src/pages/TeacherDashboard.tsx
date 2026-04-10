@@ -88,26 +88,18 @@ const TeacherDashboard = () => {
     }
   }, [session?.status, session?.id, navigate]);
   useEffect(() => {
-    if (!sessionId) return;
-    (supabase as any)
-      .from("idea_responses")
-      .select("response")
-      .eq("session_id", sessionId)
-      .then(({ data }: { data: { response: string }[] | null }) => {
-        if (data) setIdeaResponses(data.map((r) => r.response));
-      });
-    const channel = supabase
-      .channel(`idea_teacher_${sessionId}`)
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "idea_responses" as any, filter: `session_id=eq.${sessionId}` },
-        (payload: any) => {
-          setIdeaResponses((prev) => [...prev, payload.new.response]);
-        }
-      )
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [sessionId]);
+  if (!sessionId) return;
+  const channel = supabase.channel(`idea_room_${sessionId}`, {
+    config: { broadcast: { self: true } },
+  });
+  channel
+    .on("broadcast", { event: "idea_response" }, (payload) => {
+      const response = payload.payload?.response as string;
+      if (response) setIdeaResponses((prev) => [...prev, response]);
+    })
+    .subscribe();
+  return () => { supabase.removeChannel(channel); };
+}, [sessionId]);
 
   const formatTime = (ms: number) => {
     const s = Math.floor(ms / 1000);
