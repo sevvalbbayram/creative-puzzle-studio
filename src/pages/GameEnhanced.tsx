@@ -379,6 +379,7 @@ const GameEnhanced = () => {
         totalPieces={totalPieces}
         puzzleImageSrc={elephantPuzzleImage}
         onViewResults={() => navigate(`/results/${sessionId}`, { state: { placedStatements } })}
+        onClose={() => setCompleted(false)}
         placedStatements={placedStatements}
       />
     </div>

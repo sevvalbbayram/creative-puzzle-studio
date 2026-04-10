@@ -12,6 +12,7 @@ interface CompletionOverlayProps {
   totalPieces?: number;
   puzzleImageSrc?: string;
   onViewResults: () => void;
+  onClose?: () => void;
   placedStatements?: { col: number; statement: string; stageId?: string }[];
 }
 
@@ -24,6 +25,7 @@ export function CompletionOverlay({
   totalPieces,
   puzzleImageSrc,
   onViewResults,
+  onClose,
   placedStatements = [],
 }: CompletionOverlayProps) {
 
@@ -43,6 +45,8 @@ export function CompletionOverlay({
     <AnimatePresence>
       {completed && (
         <motion.div
+          
+      
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm safe-area-inset overflow-y-auto py-6"
@@ -51,8 +55,25 @@ export function CompletionOverlay({
             initial={{ scale: 0.5, y: 50 }}
             animate={{ scale: 1, y: 0 }}
             transition={{ type: "spring", stiffness: 120, damping: 16 }}
-            className={`mx-4 w-full rounded-2xl bg-card p-7 sm:p-8 text-center shadow-2xl ${puzzleImageSrc ? "max-w-md sm:max-w-lg" : "max-w-sm"}`}
+            className={`mx-4 w-full rounded-2xl bg-card p-7 sm:p-8 text-center shadow-2xl relative ${puzzleImageSrc ? "max-w-md sm:max-w-lg" : "max-w-sm"}`}
           >
+            {onClose && (
+              <button
+                onClick={onClose}
+                className="absolute top-3 right-3 text-muted-foreground hover:text-foreground text-lg leading-none"
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            )}
+          
+            <button
+              onClick={onViewResults}
+              className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Close"
+            >
+              ✕
+            </button>
             {puzzleImageSrc && (
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
