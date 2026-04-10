@@ -311,7 +311,7 @@ export function JigsawImagePuzzle({
           setTimeout(() => {
             const placed = piecesState
               .filter((p) => p.placed && p.type === "quote")
-              .map((p) => ({ col: p.col, statement: p.statement, stageId: p.stageId }));
+              .map((p) => ({ row: p.row, col: p.col, statement: p.statement, stageId: p.stageId }));
             onCompleted(placed);
           }, 700);
         }
