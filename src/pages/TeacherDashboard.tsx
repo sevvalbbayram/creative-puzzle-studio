@@ -17,6 +17,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { JoinQRCode } from "@/components/JoinQRCode";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import completedPuzzleImg from "@/assets/completed-puzzle.png";
 
 // ── Word cloud helpers ────────────────────────────────────────
 function buildWordFrequency(responses: string[]) {
@@ -577,6 +578,20 @@ const TeacherDashboard = () => {
                   </p>
                 )}
               </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">🧩 Answer Key</CardTitle>
+              <CardDescription>The completed puzzle for class discussion.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <img
+                src={completedPuzzleImg}
+                alt="Completed puzzle answer key"
+                className="w-full rounded-xl"
+              />
             </CardContent>
           </Card>
 
