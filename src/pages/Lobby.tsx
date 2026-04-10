@@ -16,6 +16,33 @@ import { useAnonymousAuth } from "@/hooks/useAnonymousAuth";
 import { useGameSession } from "@/hooks/useGameSession";
 import { DIFFICULTY_CONFIG } from "@/lib/gameData";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+ 
+function buildWordFrequency(responses: string[]) {
+  const freq: Record<string, number> = {};
+  responses.forEach((r) => {
+    r.split(/[\s,/&]+/).forEach((w) => {
+      const word = w.replace(/[^a-zA-Z]/g, "").toLowerCase();
+      if (word.length < 2) return;
+      freq[word] = (freq[word] || 0) + 1;
+    });
+  });
+  return Object.entries(freq)
+    .map(([text, count]) => ({ text, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 60);
+}
+const PALETTE = ["#f97316","#6366f1","#10b981","#f43f5e","#8b5cf6","#06b6d4","#eab308","#ec4899"];
+function wordColor(word: string) {
+  let h = 0;
+  for (let i = 0; i < word.length; i++) h = word.charCodeAt(i) + ((h << 5) - h);
+  return PALETTE[Math.abs(h) % PALETTE.length];
+}
+function wordSize(count: number, max: number) {
+  const min = 0.8, ceil = 2.8;
+  if (max <= 1) return "1.2rem";
+  return `${(min + ((count - 1) / (max - 1)) * (ceil - min)).toFixed(2)}rem`;
+}
 
 const Lobby = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -27,6 +54,7 @@ const Lobby = () => {
   } = useGameSession(sessionId ?? null, userId);
 
   const [copied, setCopied] = useState(false);
+  const [ideaResponses, setIdeaResponses] = useState<string[]>([]);
   const isGameMaster = currentPlayer?.is_game_master ?? false;
 
   useEffect(() => {
@@ -37,6 +65,29 @@ const Lobby = () => {
       navigate(`/results/${session.id}`);
     }
   }, [session?.status, session?.id, navigate]);
+
+  useEffect(() => {
+    if (!sessionId) return;
+    (supabase as any)
+      .from("idea_responses")
+      .select("response")
+      .eq("session_id", sessionId)
+      .then(({ data }: { data: { response: string }[] | null }) => {
+        if (data) setIdeaResponses(data.map((r) => r.response));
+      });
+    const channel = (supabase as any)
+      .channel(`idea_lobby_${sessionId}`)
+      .on("postgres_changes",
+        { event: "INSERT", schema: "public", table: "idea_responses" },
+        (payload: any) => {
+          if (payload.new?.session_id === sessionId) {
+            setIdeaResponses((prev) => [...prev, payload.new.response]);
+          }
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [sessionId]);
 
   const copyLink = () => {
     const url = `${window.location.origin}/?code=${session?.code}`;
@@ -242,6 +293,40 @@ const Lobby = () => {
             </div>
           </CardContent>
         </Card>
+        {/* Word Cloud */}
+          <div className="w-full rounded-2xl border border-border bg-card p-4 shadow-sm">
+            <p className="mb-1 text-sm font-semibold">💡 Where we get our best ideas</p>
+            <p className="mb-3 text-xs text-muted-foreground">
+              {ideaResponses.length} {ideaResponses.length === 1 ? "response" : "responses"} · live
+            </p>
+            {ideaResponses.length === 0 ? (
+              <p className="text-center text-sm italic text-muted-foreground py-4">
+                Waiting for students to answer…
+              </p>
+            ) : (
+              <div className="flex min-h-[80px] flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-xl bg-muted/40 px-4 py-4">
+                {buildWordFrequency(ideaResponses).map(({ text, count }) => {
+                  const max = buildWordFrequency(ideaResponses)[0]?.count ?? 1;
+                  return (
+                    <motion.span
+                      key={text}
+                      initial={{ opacity: 0, scale: 0.7 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ type: "spring", stiffness: 200 }}
+                      style={{
+                        fontSize: wordSize(count, max),
+                        color: wordColor(text),
+                        fontWeight: count >= max * 0.7 ? 700 : 400,
+                        lineHeight: 1.3,
+                      }}
+                    >
+                      {text}
+                    </motion.span>
+                  );
+                })}
+              </div>
+            )}
+          </div>
 
         {/* Start / Waiting */}
         {isGameMaster ? (
