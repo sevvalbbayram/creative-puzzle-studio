@@ -519,41 +519,7 @@ export function JigsawImagePuzzle({
             )}
           </AnimatePresence>
 
-          <AnimatePresence>
-            {allComplete && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="absolute inset-0 rounded-xl flex items-center justify-center bg-black/20 backdrop-blur-[2px] pointer-events-none z-20"
-              >
-                <motion.div
-                  initial={{ scale: 0, rotate: -10 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 120,
-                    damping: 14,
-                    delay: 0.2,
-                  }}
-                  className="text-center px-6 py-5 rounded-2xl glass shadow-glow-gold"
-                >
-                  <motion.div
-                    animate={{ rotate: [0, -8, 8, -4, 0] }}
-                    transition={{ delay: 0.4, duration: 0.6 }}
-                    className="text-5xl mb-2"
-                  >
-                    🧩
-                  </motion.div>
-                  <p className="font-display text-2xl font-bold text-white drop-shadow-lg mb-1">
-                    Puzzle Complete!
-                  </p>
-                  <p className="text-white/80 text-sm">
-                    All {totalToPlace} pieces placed
-                  </p>
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          
         </div>
 
         <div className="w-full mt-3 px-1" style={{ maxWidth: 640 }}>
