@@ -442,44 +442,18 @@ const TeacherDashboard = () => {
             </Card>
           )}
 
-{/* Word Cloud */}
+{/* Answer Key */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-base">
-                💡 Where students get their best ideas
-              </CardTitle>
-              <CardDescription>
-                {ideaResponses.length} {ideaResponses.length === 1 ? "response" : "responses"} · updates live as students join
-              </CardDescription>
+              <CardTitle className="text-base">🧩 Answer Key</CardTitle>
+              <CardDescription>The completed puzzle for class discussion.</CardDescription>
             </CardHeader>
             <CardContent>
-              {ideaResponses.length === 0 ? (
-                <p className="py-4 text-center text-sm italic text-muted-foreground">
-                  Waiting for students to answer…
-                </p>
-              ) : (
-                <div className="flex min-h-[100px] flex-wrap items-center justify-center gap-x-4 gap-y-2 rounded-xl bg-muted/40 px-4 py-5">
-                  {buildWordFrequency(ideaResponses).map(({ text, count }) => {
-                    const max = buildWordFrequency(ideaResponses)[0]?.count ?? 1;
-                    return (
-                      <motion.span
-                        key={text}
-                        initial={{ opacity: 0, scale: 0.7 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ type: "spring", stiffness: 200 }}
-                        style={{
-                          fontSize: wordSize(count, max),
-                          color: wordColor(text),
-                          fontWeight: count >= max * 0.7 ? 700 : count >= max * 0.4 ? 600 : 400,
-                          lineHeight: 1.3,
-                        }}
-                      >
-                        {text}
-                      </motion.span>
-                    );
-                  })}
-                </div>
-              )}
+              <img
+                src={completedPuzzleImg}
+                alt="Completed puzzle answer key"
+                className="w-full rounded-xl"
+              />
             </CardContent>
           </Card>
           {/* Class Progress */}
@@ -578,20 +552,6 @@ const TeacherDashboard = () => {
                   </p>
                 )}
               </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">🧩 Answer Key</CardTitle>
-              <CardDescription>The completed puzzle for class discussion.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <img
-                src={completedPuzzleImg}
-                alt="Completed puzzle answer key"
-                className="w-full rounded-xl"
-              />
             </CardContent>
           </Card>
 

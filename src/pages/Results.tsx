@@ -9,7 +9,7 @@ import { useGameSession } from "@/hooks/useGameSession";
 import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import confetti from "canvas-confetti";
-import elephantPuzzleImage from "@/assets/elephant-puzzle-new.png";
+import completedPuzzleImg from "@/assets/completed-puzzle.png";
 
 const DIFFICULTY_LABELS: Record<string, string> = {
   easy: "Easy",
@@ -179,66 +179,16 @@ const Results = () => {
           transition={{ delay: 0.2, duration: 0.45 }}
           className="overflow-hidden rounded-2xl border bg-card p-3 shadow-md"
         >
-          <div className="relative w-full rounded-lg overflow-hidden">
-            <img
-              src={elephantPuzzleImage}
-              alt="Complete creativity puzzle"
-              className="w-full object-contain opacity-30"
-            />
-            <div
-              className="absolute inset-0 grid"
-              style={{
-                gridTemplateColumns: "repeat(4, 1fr)",
-                gridTemplateRows: "repeat(4, 1fr)",
-                gap: "1px",
-                padding: "1px",
-              }}
-            >
-              {Array.from({ length: 16 }, (_, i) => {
-                const row = Math.floor(i / 4);
-                const col = i % 4;
-                const isKeyRow = row === 0;
-                const keyLabels = ["Preparation", "Incubation", "Illumination", "Verification"];
-                const colColors = [
-                  "rgba(99,102,241,0.88)",
-                  "rgba(168,85,247,0.88)",
-                  "rgba(234,179,8,0.88)",
-                  "rgba(34,197,94,0.88)",
-                ];
-                const piece = placedStatements.find((s) => s.row === row && s.col === col);
-                const label = isKeyRow ? keyLabels[col] : piece?.statement ?? "";
-                return (
-                  <div
-                    key={i}
-                    className="flex items-center justify-center p-0.5 text-center"
-                    style={{
-                      background: isKeyRow
-                        ? colColors[col]
-                        : piece ? "rgba(0,0,0,0.62)" : "rgba(0,0,0,0.25)",
-                    }}
-                  >
-                    <span
-                      className="text-white leading-tight break-words w-full"
-                      style={{
-                        fontSize: "clamp(5px, 1.5vw, 9px)",
-                        fontWeight: isKeyRow ? 700 : 400,
-                        display: "-webkit-box",
-                        WebkitLineClamp: 4,
-                        WebkitBoxOrient: "vertical" as any,
-                        overflow: "hidden",
-                      }}
-                    >
-                      {label}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+          <img
+            src={completedPuzzleImg}
+            alt="Completed puzzle"
+            className="w-full rounded-xl"
+          />
           <p className="mt-2 text-center text-xs font-medium text-muted-foreground">
             The complete puzzle
           </p>
         </motion.div>
+      
 
         {/* Full Scoreboard */}
         <Card>
