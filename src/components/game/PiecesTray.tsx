@@ -38,7 +38,6 @@ const stageIconMap: Record<string, string> = {
   incubation:   "🟣",
   illumination: "🟡",
   evaluation:   "🔴",
-  elaboration:  "🟢",
 };
 
 // Jigsaw clip path for tray pieces — gives each card a puzzle-piece silhouette

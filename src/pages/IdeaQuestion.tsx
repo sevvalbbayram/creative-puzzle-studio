@@ -59,14 +59,23 @@ const IdeaQuestion = () => {
   // ── Load existing responses + subscribe to realtime ───────────────────────
   useEffect(() => {
     if (!sessionId) return;
-    const channel = supabase.channel(`idea_room_${sessionId}`, {
-      config: { broadcast: { self: true } },
-    });
-    channel
-      .on("broadcast", { event: "idea_response" }, (payload) => {
-        const response = payload.payload?.response as string;
-        if (response) setAllResponses((prev) => [...prev, response]);
-      })
+    (supabase as any)
+      .from("idea_responses")
+      .select("response")
+      .eq("session_id", sessionId)
+      .then(({ data }: { data: { response: string }[] | null }) => {
+        if (data) setAllResponses(data.map((r) => r.response));
+      });
+    const channel = (supabase as any)
+      .channel(`idea_db_${sessionId}`)
+      .on("postgres_changes",
+        { event: "INSERT", schema: "public", table: "idea_responses" },
+        (payload: any) => {
+          if (payload.new?.session_id === sessionId) {
+            setAllResponses((prev) => [...prev, payload.new.response]);
+          }
+        }
+      )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [sessionId]);
@@ -77,19 +86,17 @@ const IdeaQuestion = () => {
     if (!trimmed) return;
     setSaving(true);
     setSaveError(null);
-    try {
-      const broadcastChannel = supabase.channel(`idea_room_${sessionId}`);
-      await broadcastChannel.send({
-        type: "broadcast",
-        event: "idea_response",
-        payload: { response: trimmed, nickname },
-      });
-      setSubmitted(true);
-    } catch {
-      setSaveError("Couldn't send — please try again.");
-    } finally {
-      setSaving(false);
+    const { error } = await (supabase as any).from("idea_responses").insert({
+      player_name: nickname,
+      session_id: sessionId ?? null,
+      response: trimmed,
+    });
+    setSaving(false);
+    if (error) {
+      setSaveError("Couldn't save: " + error.message);
+      return;
     }
+    setSubmitted(true);
   };
   // ── Go to next screen ─────────────────────────────────────────────────────
   const handleContinue = () => {
