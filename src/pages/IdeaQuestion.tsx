@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, Lightbulb } from "lucide-react";
@@ -6,8 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-
-// ─── Word cloud helpers ───────────────────────────────────────────────────────
 
 interface WordEntry { text: string; count: number }
 
@@ -32,21 +30,18 @@ function fontSize(count: number, max: number): string {
   return `${(min + ((count - 1) / (max - 1)) * (ceiling - min)).toFixed(2)}rem`;
 }
 
-const PALETTE = ["#f97316","#6366f1","#10b981","#f43f5e","#8b5cf6","#06b6d4","#eab308","#ec4899"];
+const PALETTE = ["#f97316", "#6366f1", "#10b981", "#f43f5e", "#8b5cf6", "#06b6d4", "#eab308", "#ec4899"];
 function wordColor(word: string): string {
   let h = 0;
   for (let i = 0; i < word.length; i++) h = word.charCodeAt(i) + ((h << 5) - h);
   return PALETTE[Math.abs(h) % PALETTE.length];
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
-
 const IdeaQuestion = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  // destination is passed as ?next=lobby or ?next=game (set by Index.tsx)
   const next = searchParams.get("next") ?? "lobby";
   const nickname = searchParams.get("nickname") ?? "Player";
 
@@ -55,50 +50,55 @@ const IdeaQuestion = () => {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [allResponses, setAllResponses] = useState<string[]>([]);
+  const channelRef = useRef<any>(null);
 
-  // ── Load existing responses + subscribe to realtime ───────────────────────
   useEffect(() => {
     if (!sessionId) return;
-    (supabase as any)
-      .from("idea_responses")
-      .select("response")
-      .eq("session_id", sessionId)
-      .then(({ data }: { data: { response: string }[] | null }) => {
-        if (data) setAllResponses(data.map((r) => r.response));
-      });
-    const channel = (supabase as any)
-      .channel(`idea_db_${sessionId}`)
-      .on("postgres_changes",
-        { event: "INSERT", schema: "public", table: "idea_responses" },
-        (payload: any) => {
-          if (payload.new?.session_id === sessionId) {
-            setAllResponses((prev) => [...prev, payload.new.response]);
-          }
-        }
-      )
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [sessionId]);
 
-  // ── Submit answer ─────────────────────────────────────────────────────────
+    const channel = supabase.channel(`idea_presence_${sessionId}`, {
+      config: { presence: { key: nickname + "_" + Date.now() } },
+    });
+
+    channelRef.current = channel;
+
+    channel
+      .on("presence", { event: "sync" }, () => {
+        const state = channel.presenceState() as Record<string, any[]>;
+        const responses: string[] = [];
+        Object.values(state).forEach((presences) => {
+          presences.forEach((p) => {
+            if (p.response) responses.push(p.response);
+          });
+        });
+        setAllResponses(responses);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [sessionId, nickname]);
+
   const handleSubmit = async () => {
     const trimmed = answer.trim();
     if (!trimmed) return;
     setSaving(true);
     setSaveError(null);
-    const { error } = await (supabase as any).from("idea_responses").insert({
-      player_name: nickname,
-      session_id: sessionId ?? null,
-      response: trimmed,
-    });
-    setSaving(false);
-    if (error) {
-      setSaveError("Couldn't save: " + error.message);
-      return;
+    try {
+      if (!channelRef.current) throw new Error("Not connected");
+      await channelRef.current.track({
+        nickname,
+        response: trimmed,
+        submittedAt: Date.now(),
+      });
+      setSubmitted(true);
+    } catch {
+      setSaveError("Couldn't save — please try again.");
+    } finally {
+      setSaving(false);
     }
-    setSubmitted(true);
   };
-  // ── Go to next screen ─────────────────────────────────────────────────────
+
   const handleContinue = () => {
     if (next === "game") {
       navigate(`/game/${sessionId}?idea=${encodeURIComponent(answer)}`);
@@ -107,7 +107,6 @@ const IdeaQuestion = () => {
     }
   };
 
-  // ── Word cloud ────────────────────────────────────────────────────────────
   const words = buildWordFrequency(allResponses);
   const maxCount = words[0]?.count ?? 1;
 
@@ -119,7 +118,6 @@ const IdeaQuestion = () => {
         transition={{ duration: 0.45 }}
         className="relative z-10 flex w-full max-w-lg flex-col items-center gap-6"
       >
-        {/* Header */}
         <div className="text-center">
           <motion.div
             initial={{ scale: 0 }}
@@ -133,14 +131,14 @@ const IdeaQuestion = () => {
             Hey {nickname}! 👋
           </h1>
           <p className="mt-2 text-lg font-medium text-foreground/80">
-            Where do you get your <span className="text-primary font-bold">best ideas</span> from?
+            Where do you get your{" "}
+            <span className="text-primary font-bold">best ideas</span> from?
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
             Your answer will appear in the word cloud — and become part of the puzzle!
           </p>
         </div>
 
-        {/* Input / confirmation card */}
         <Card className="w-full shadow-xl">
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Your answer</CardTitle>
@@ -152,7 +150,7 @@ const IdeaQuestion = () => {
             {!submitted ? (
               <>
                 <Input
-                  placeholder="e.g. the shower, long walks…"
+                  placeholder="e.g. the shower, long walks, coffee…"
                   value={answer}
                   onChange={(e) => setAnswer(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
@@ -178,9 +176,7 @@ const IdeaQuestion = () => {
                 <div className="rounded-xl bg-primary/5 border border-primary/20 px-4 py-3 text-center">
                   <p className="text-sm text-muted-foreground">Your answer</p>
                   <p className="font-display text-lg font-bold text-primary">"{answer}"</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    ✅ Added to the word cloud!
-                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">✅ Added to the word cloud!</p>
                 </div>
                 <Button
                   className="w-full gap-2 min-h-[44px] text-base"
@@ -194,7 +190,6 @@ const IdeaQuestion = () => {
           </CardContent>
         </Card>
 
-        {/* Word cloud */}
         <div className="w-full">
           <p className="mb-3 text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             Ideas from this session
@@ -237,4 +232,4 @@ const IdeaQuestion = () => {
   );
 };
 
-export default IdeaQuestion;6
+export default IdeaQuestion;

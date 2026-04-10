@@ -88,27 +88,24 @@ const TeacherDashboard = () => {
     }
   }, [session?.status, session?.id, navigate]);
   useEffect(() => {
-    if (!sessionId) return;
-    (supabase as any)
-      .from("idea_responses")
-      .select("response")
-      .eq("session_id", sessionId)
-      .then(({ data }: { data: { response: string }[] | null }) => {
-        if (data) setIdeaResponses(data.map((r) => r.response));
+  if (!sessionId) return;
+  const channel = supabase.channel(`idea_presence_${sessionId}`, {
+    config: { presence: { key: "observer_" + Date.now() } },
+  });
+  channel
+    .on("presence", { event: "sync" }, () => {
+      const state = channel.presenceState() as Record<string, any[]>;
+      const responses: string[] = [];
+      Object.values(state).forEach((presences) => {
+        presences.forEach((p: any) => {
+          if (p.response) responses.push(p.response);
+        });
       });
-    const channel = (supabase as any)
-      .channel(`idea_db_teacher_${sessionId}`)
-      .on("postgres_changes",
-        { event: "INSERT", schema: "public", table: "idea_responses" },
-        (payload: any) => {
-          if (payload.new?.session_id === sessionId) {
-            setIdeaResponses((prev) => [...prev, payload.new.response]);
-          }
-        }
-      )
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [sessionId]);
+      setIdeaResponses(responses);
+    })
+    .subscribe();
+  return () => { supabase.removeChannel(channel); };
+}, [sessionId]);
 
   const formatTime = (ms: number) => {
     const s = Math.floor(ms / 1000);
